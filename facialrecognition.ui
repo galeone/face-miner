@@ -34,7 +34,7 @@
       <enum>QLayout::SetMinimumSize</enum>
      </property>
      <item row="0" column="0">
-      <widget class="CamStreamView" name="_camStreamView">
+      <widget class="VideoStreamView" name="_videoStreamView">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
          <horstretch>0</horstretch>
@@ -84,9 +84,9 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>CamStreamView</class>
+   <class>VideoStreamView</class>
    <extends>QLabel</extends>
-   <header>camstreamview.h</header>
+   <header>videostreamview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -32,26 +32,16 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
 
 
     // sending click coordinates into CamStremView to FacialRecognition::_handleClick
-    connect(_getCamStreamView(),&CamStreamView::clicked, this, &FacialRecognition::_handleClick);
+    connect(_getVideoStreamView(),&VideoStreamView::clicked, this, &FacialRecognition::_handleClick);
 
     // start thread: stream of frames
     frameStreamThread->start();
-
-    /*
-    // Connecting camStreamWorker::newFrom output to this::_updateCamView input
-    connect(camStreamWorker, SIGNAL(newFrame(const cv::Mat&)), this, SLOT(_updateCamView(const cv::Mat&)));
-    // Connecting thread (that wraps camStreamWorker) started with camStreamWorker work()
-    connect(thread, SIGNAL(started()), camStreamWorker, SLOT(work()));
-    thread->start();
-
-    // Connecting CamStreamView::clicked(position) output with this::_positionHandler(position) input
-    connect(_camStreamView,SIGNAL(clicked(const cv::Point&)), this, SLOT(_handleClick(const cv::Point&)));*/
 }
 
 void FacialRecognition::_updateCamView(const cv::Mat& frame)
 {
     QImage camImage = Cv2Qt::cvMatToQImage(frame);
-    _getCamStreamView()->setPixmap(QPixmap::fromImage(camImage));
+    _getVideoStreamView()->setPixmap(QPixmap::fromImage(camImage));
 }
 
 void FacialRecognition::_handleClick(const cv::Point& point)
@@ -64,6 +54,6 @@ FacialRecognition::~FacialRecognition()
     delete ui;
 }
 
-CamStreamView* FacialRecognition::_getCamStreamView() {
-    return reinterpret_cast<CamStreamView*>(ui->gridLayout->itemAtPosition(0,0)->widget());
+VideoStreamView* FacialRecognition::_getVideoStreamView() {
+    return reinterpret_cast<VideoStreamView*>(ui->gridLayout->itemAtPosition(0,0)->widget());
 }

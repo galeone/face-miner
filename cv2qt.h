@@ -20,7 +20,7 @@ public slots:
 
 private:
     cv::VideoCapture _cam;
-    QLabel* _camStreamView;
+    QLabel* _VideoStreamView;
 };
 
 #endif // CV2QT_H

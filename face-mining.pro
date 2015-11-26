@@ -18,16 +18,23 @@ LIBS += `pkg-config opencv --libs`
 SOURCES += main.cpp\
         facialrecognition.cpp \
     cameracalibrationworker.cpp \
-    camstreamview.cpp \
     cv2qt.cpp \
     qt2cv.cpp \
-    camstream.cpp
+    camstream.cpp \
+    videostreamview.cpp
 
 HEADERS  += facialrecognition.h \
     cameracalibrationworker.h \
-    camstreamview.h \
     cv2qt.h \
     qt2cv.h \
-    camstream.h
+    camstream.h \
+    videostreamview.h
 
 FORMS    += facialrecognition.ui
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/build-MAFIA-Desktop-Debug/release/ -lMAFIA
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/build-MAFIA-Desktop-Debug/debug/ -lMAFIA
+else:unix: LIBS += -L$$PWD/build-MAFIA-Desktop-Debug/ -lMAFIA
+
+INCLUDEPATH += $$PWD/MAFIA
+DEPENDPATH += $$PWD/MAFIA

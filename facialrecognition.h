@@ -5,7 +5,7 @@
 #include <QMessageBox>
 #include <QThread>
 #include "camstream.h"
-#include "camstreamview.h"
+#include "videostreamview.h"
 #include "cv2qt.h"
 #include <opencv2/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -24,7 +24,7 @@ public:
 
 private:
     Ui::FacialRecognition *ui;
-    CamStreamView* _getCamStreamView();
+    VideoStreamView* _getVideoStreamView();
 
 private slots:
     void _updateCamView(const cv::Mat&);

@@ -7,7 +7,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <chrono>
 #include <thread>
-#include "camstreamview.h"
+#include "videostreamview.h"
 
 
 class CamStream : public QObject
