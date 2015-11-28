@@ -7,6 +7,7 @@
 #include "camstream.h"
 #include "videostreamview.h"
 #include "cv2qt.h"
+#include "facepatternminer.h"
 #include <opencv2/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
@@ -24,10 +25,12 @@ public:
 
 private:
     Ui::FacialRecognition *ui;
-    VideoStreamView* _getVideoStreamView();
+    VideoStreamView* _getCamStreamView();
+    VideoStreamView* _getTrainingStreamView();
 
 private slots:
     void _updateCamView(const cv::Mat&);
+    void _updateTrainingStreamView(const cv::Mat&);
     void _handleClick(const cv::Point&);
 };
 

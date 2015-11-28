@@ -14,6 +14,8 @@ class VideoStreamView : public QLabel
 
 public:
     explicit VideoStreamView(QWidget *parent = 0) : QLabel(parent) {}
+    void setSize(const QSize &size);
+    void setImage(const QImage &image);
 
 signals:
     void clicked(const cv::Point &position);
@@ -23,6 +25,8 @@ protected:
     virtual void keyPressEvent(QKeyEvent* ev);
     virtual void mousePressEvent(QMouseEvent* ev);
 
+private:
+    QSize _size;
 
 };
 

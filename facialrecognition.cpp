@@ -15,7 +15,6 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     }
 
 
-
     // register cv::Mat type, thus it can be used in signals and slots
     qRegisterMetaType<cv::Mat>("cv::Mat");
 
@@ -30,18 +29,41 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     // start frameStream on frameStreamThread start
     connect(frameStreamThread, &QThread::started, frameStream, &CamStream::start);
 
-
     // sending click coordinates into CamStremView to FacialRecognition::_handleClick
-    connect(_getVideoStreamView(),&VideoStreamView::clicked, this, &FacialRecognition::_handleClick);
+    connect(_getCamStreamView(),&VideoStreamView::clicked, this, &FacialRecognition::_handleClick);
 
+    // set CamStreamView to fixed size
+    QSize streamSize(300,300);
+    _getCamStreamView()->setSize(streamSize);
+
+    // set TraingStreamView to fixed size
+    _getTrainingStreamView()->setSize(streamSize);
     // start thread: stream of frames
     frameStreamThread->start();
+
+    // Create a thread for the miner
+    QThread *minerThread = new QThread();
+    // Create the face pattern miner
+    // TODO: user BioID dataset for validation. Use yale dataset for training.
+    FacePatternMiner *patternMiner = new FacePatternMiner("./datasets/BioID-FaceDatabase-V1.2/");
+    // move the miner to his own thread
+    patternMiner->moveToThread(minerThread);
+    // connect signal start of the thread to the start() method of the miner
+    connect(minerThread, &QThread::started, patternMiner, &FacePatternMiner::start);
+    // connect processing signal of miner to the GUI, to show what image has being processed
+    connect(patternMiner, &FacePatternMiner::preprocessing, this, &FacialRecognition::_updateTrainingStreamView);
+    // start the miner thread
+    minerThread->start();
+
 }
 
 void FacialRecognition::_updateCamView(const cv::Mat& frame)
 {
-    QImage camImage = Cv2Qt::cvMatToQImage(frame);
-    _getVideoStreamView()->setPixmap(QPixmap::fromImage(camImage));
+    _getCamStreamView()->setImage(Cv2Qt::cvMatToQImage(frame));
+}
+
+void FacialRecognition::_updateTrainingStreamView(const cv::Mat& frame) {
+    _getTrainingStreamView()->setImage(Cv2Qt::cvMatToQImage(frame));
 }
 
 void FacialRecognition::_handleClick(const cv::Point& point)
@@ -54,6 +76,10 @@ FacialRecognition::~FacialRecognition()
     delete ui;
 }
 
-VideoStreamView* FacialRecognition::_getVideoStreamView() {
+VideoStreamView* FacialRecognition::_getCamStreamView() {
     return reinterpret_cast<VideoStreamView*>(ui->gridLayout->itemAtPosition(0,0)->widget());
+}
+
+VideoStreamView* FacialRecognition::_getTrainingStreamView() {
+    return reinterpret_cast<VideoStreamView*>(ui->gridLayout->itemAtPosition(0,2)->widget());
 }
