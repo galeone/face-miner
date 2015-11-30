@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QThread>
+#include <QMimeData>
 #include "camstream.h"
 #include "videostreamview.h"
 #include "cv2qt.h"

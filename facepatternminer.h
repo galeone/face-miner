@@ -2,6 +2,7 @@
 #define FACEPATTERNMINER_H
 
 #include <QDirIterator>
+#include <QMimeDatabase>
 #include <QStringList>
 #include <iostream>
 #include <opencv2/core.hpp>
@@ -14,9 +15,10 @@ class FacePatternMiner : public QObject
 
 private:
     QDirIterator *_it;
+    QString _mimeFilter;
 
 public:
-    FacePatternMiner(QString dataset);
+    FacePatternMiner(QString dataset, QString mineFilter);
 
 signals:
     void preprocessing(const cv::Mat &);

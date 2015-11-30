@@ -1,20 +1,29 @@
 #include "facepatternminer.h"
-
-FacePatternMiner::FacePatternMiner(QString dataset) {
-    _it = new QDirIterator(dataset, QStringList() << "*.pgm", QDir::Files);
+FacePatternMiner::FacePatternMiner(QString dataset, QString mimeFilter) {
+    _mimeFilter = mimeFilter;
+    _it = new QDirIterator(dataset);
 }
 
 // slot
 void FacePatternMiner::start() {
+    QMimeDatabase mimeDB;
     while(_it->hasNext()) {
-        auto image = cv::imread(_it->next().toStdString());
+        auto fileName = _it->next();
+        auto fileMime = mimeDB.mimeTypeForFile(fileName);
+        if (!fileMime.inherits(_mimeFilter)) {
+            continue;
+        }
+        std::cout << fileName.toStdString() << std::endl;
+        auto image = cv::imread(fileName.toStdString());
         emit preprocessing(image);
         // lets user the histogram equalization method in order to
         // equalize the distributuo of greys in the original image
         // Thus we stretch the historgram trying to make it plan
 
-        // first, convert the image to grayscale
-        cv::cvtColor(image, image, CV_BGR2GRAY);
+        // first, convert the image to grayscale if is not in grayscale already
+        if(image.channels() > 1) {
+            cv::cvtColor(image, image, CV_BGR2GRAY);
+        }
 
         // second, equalize it
         cv::Mat equalizedImage;

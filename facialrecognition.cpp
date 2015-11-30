@@ -44,8 +44,8 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     // Create a thread for the miner
     QThread *minerThread = new QThread();
     // Create the face pattern miner
-    // TODO: user BioID dataset for validation. Use yale dataset for training.
-    FacePatternMiner *patternMiner = new FacePatternMiner("./datasets/BioID-FaceDatabase-V1.2/");
+    // Using yale dataset for training
+    FacePatternMiner *patternMiner = new FacePatternMiner("./datasets/yalefaces/", QString("image/x-portable-graymap"));
     // move the miner to his own thread
     patternMiner->moveToThread(minerThread);
     // connect signal start of the thread to the start() method of the miner
