@@ -54,7 +54,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 ///
 /// @param numBits           number of bits in the Bitmap
 /////////////////////////////////////////////////////////////////////
-Bitmap::Bitmap(int numBits) {
+MAFIA::Bitmap::Bitmap(int numBits) {
     // Convert bitsize to number of ints
     _size = (numBits / 32) + 1;
     _compSize = (int)(_size * 1.25) + 1;
@@ -79,7 +79,7 @@ Bitmap::Bitmap(int numBits) {
 ///
 /// @param b                 bitmap to copy
 /////////////////////////////////////////////////////////////////////
-Bitmap::Bitmap(Bitmap &b): BaseBitmap(b) {
+MAFIA::Bitmap::Bitmap(Bitmap &b): BaseBitmap(b) {
     _size = b._size;
     _compSize = b._compSize;
     _compUsed = b._compUsed;
@@ -99,7 +99,7 @@ Bitmap::Bitmap(Bitmap &b): BaseBitmap(b) {
 /////////////////////////////////////////////////////////////////////
 /// Deallocate memory for the Bitmap
 /////////////////////////////////////////////////////////////////////
-Bitmap::~Bitmap() {
+MAFIA::Bitmap::~Bitmap() {
     delete [] _compMemory;
 }
 
@@ -108,7 +108,7 @@ Bitmap::~Bitmap() {
 ///
 /// @param j                 bit position in Bitmap to be changed
 /////////////////////////////////////////////////////////////////////
-void Bitmap::FillCompEmptyPosition(int j) {
+void MAFIA::Bitmap::FillCompEmptyPosition(int j) {
     // Locate correct int in the bitmap
     int i = j / 32;
 
@@ -121,7 +121,7 @@ void Bitmap::FillCompEmptyPosition(int j) {
 ///
 /// @return the count of ones in the bitmap
 /////////////////////////////////////////////////////////////////////
-int Bitmap::SmallCount(int &CountCounts) {
+int MAFIA::Bitmap::SmallCount(int &CountCounts) {
     int final = 0;
     unsigned char *p;
     CountCounts++;
@@ -151,7 +151,7 @@ int Bitmap::SmallCount(int &CountCounts) {
 /// @param B2                second bitmap
 /// @param CountSmallAnds    [output] counter of ANDs on compressed data
 /////////////////////////////////////////////////////////////////////
-void Bitmap::AndCompOnly(
+void MAFIA::Bitmap::AndCompOnly(
             const Bitmap &B1,
             const Bitmap &B2,
             int &CountSmallAnds) {
@@ -180,7 +180,7 @@ void Bitmap::AndCompOnly(
 /// @param B2                second bitmap
 /// @param CountSmallAnds    [output] counter of ANDs on compressed data
 /////////////////////////////////////////////////////////////////////
-void Bitmap::NotAndCompOnly(
+void MAFIA::Bitmap::NotAndCompOnly(
             const Bitmap &B1,
             const Bitmap &B2,
             int &CountSmallAnds) {
@@ -208,7 +208,7 @@ void Bitmap::NotAndCompOnly(
 ///
 /// @param source            the bitmap you are compressing relative to
 /////////////////////////////////////////////////////////////////////
-void Bitmap::BuildRelComp(Bitmap &source) {
+void MAFIA::Bitmap::BuildRelComp(Bitmap &source) {
     int i;
     int bc;
 
@@ -264,7 +264,7 @@ void Bitmap::BuildRelComp(Bitmap &source) {
 /////////////////////////////////////////////////////////////////////
 /// Fill the compressed bitmap with ones
 /////////////////////////////////////////////////////////////////////
-void Bitmap::BuildSource() {
+void MAFIA::Bitmap::BuildSource() {
     unsigned int *whatever = _compMemory;
 
     // find out how many INTs will be used in the compressed data

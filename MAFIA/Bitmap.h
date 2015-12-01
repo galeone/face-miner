@@ -54,6 +54,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
 /// This bitmap has compressed and uncompressed data.
 /// Note: Transaction bitmaps are of this type
 /////////////////////////////////////////////////////////////////////
+
+namespace MAFIA {
+
 class Bitmap : public BaseBitmap {
 
 public:
@@ -77,5 +80,6 @@ public:
     unsigned int* _compMemory; ///< where COMPRESSED data stored
 };
 /** @} */
+}
 
 #endif

@@ -44,6 +44,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
 /////////////////////////////////////////////////////////////////////
 /// Output itemsets to a file
 /////////////////////////////////////////////////////////////////////
+
+namespace MAFIA {
+
 class ItemsetOutput {
 public:
 
@@ -57,4 +60,5 @@ public:
 private:
     FILE *out;              ///< pointer to output file
 };
+}
 /** @} */

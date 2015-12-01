@@ -18,4 +18,5 @@ HEADERS += \
     ItemsetOutput.h \
     Tables.h \
     Transaction.h \
-    TreeNode.h
+    TreeNode.h \
+    Mafia.h

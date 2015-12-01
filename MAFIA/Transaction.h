@@ -52,6 +52,9 @@ using namespace std;
 /////////////////////////////////////////////////////////////////////
 /// Transaction (itemlist) from a database
 /////////////////////////////////////////////////////////////////////
+
+namespace MAFIA {
+
 class Transaction {
 public:
 
@@ -83,4 +86,5 @@ private:
 
     ifstream inputFile;              ///< pointer to file input
 };
+}
 /** @} */

@@ -50,7 +50,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 ///
 /// @param numBits           number of bits in the BaseBitmap
 /////////////////////////////////////////////////////////////////////
-BaseBitmap::BaseBitmap(int numBits) {
+MAFIA::BaseBitmap::BaseBitmap(int numBits) {
     // Convert bitsize to number of ints
     _size = (numBits / 32) + 1;
     _memory = new unsigned int[_size];
@@ -66,7 +66,7 @@ BaseBitmap::BaseBitmap(int numBits) {
 ///
 /// @param bitmapToCopy                 BaseBitmap to copy
 /////////////////////////////////////////////////////////////////////
-BaseBitmap::BaseBitmap(BaseBitmap &bitmapToCopy) {
+MAFIA::BaseBitmap::BaseBitmap(BaseBitmap &bitmapToCopy) {
     // Copy information from source bitmap
     _size = bitmapToCopy._size;
     _memory = new unsigned int[ _size ];
@@ -81,7 +81,7 @@ BaseBitmap::BaseBitmap(BaseBitmap &bitmapToCopy) {
 ///
 /// @param prob                 probability of a bit being set to 1
 /////////////////////////////////////////////////////////////////////
-void BaseBitmap::FillRand(double prob) {
+void MAFIA::BaseBitmap::FillRand(double prob) {
     unsigned int randy;
 
     for (int byteIndex = 0; byteIndex < _size; byteIndex++) {
@@ -99,7 +99,7 @@ void BaseBitmap::FillRand(double prob) {
 /////////////////////////////////////////////////////////////////////
 /// Fill the BaseBitmap with ones
 /////////////////////////////////////////////////////////////////////
-void BaseBitmap::FillOnes() {
+void MAFIA::BaseBitmap::FillOnes() {
     for (int byteIndex = 0; byteIndex < _size; byteIndex++)
         _memory[byteIndex] = UINT_MAX;
 }
@@ -110,7 +110,7 @@ void BaseBitmap::FillOnes() {
 /// @param CountCounts       a counter of counts (for debugging)
 /// @return                  the count of ones
 /////////////////////////////////////////////////////////////////////
-int BaseBitmap::Count(int &CountCounts) {
+int MAFIA::BaseBitmap::Count(int &CountCounts) {
     int final = 0;
     unsigned char *currentIndex;
     for (int byteIndex = 0; byteIndex < _size; byteIndex++) {
@@ -140,7 +140,7 @@ int BaseBitmap::Count(int &CountCounts) {
 /// @param B1                the first Bitmap
 /// @param B2                the second Bitmap
 /////////////////////////////////////////////////////////////////////
-void BaseBitmap::Or(const BaseBitmap &B1, const BaseBitmap &B2) {
+void MAFIA::BaseBitmap::Or(const BaseBitmap &B1, const BaseBitmap &B2) {
     unsigned int *b1ptr, *b2ptr;
     b1ptr = B1._memory;
     b2ptr = B2._memory;
@@ -164,7 +164,7 @@ void BaseBitmap::Or(const BaseBitmap &B1, const BaseBitmap &B2) {
 /// @param B2                the second Bitmap
 /// @param CountAnds         [output] counter for # of ANDs (for debugging)
 /////////////////////////////////////////////////////////////////////
-void BaseBitmap::AndOnly(
+void MAFIA::BaseBitmap::AndOnly(
     const BaseBitmap &B1,
     const BaseBitmap &B2,
     int &CountAnds) {
@@ -192,7 +192,7 @@ void BaseBitmap::AndOnly(
 /// @param B2                the second Bitmap
 /// @param CountAnds         [output] counter for # of ANDs (for debugging)
 /////////////////////////////////////////////////////////////////////
-void BaseBitmap::NotAndOnly(
+void MAFIA::BaseBitmap::NotAndOnly(
     const BaseBitmap &B1,
     const BaseBitmap &B2,
     int &CountAnds) {
@@ -222,7 +222,7 @@ void BaseBitmap::NotAndOnly(
 ///                          parameter bitmap (this bitmap has a 1 in ALL
 ///                          positions that parameter bitmap does )
 /////////////////////////////////////////////////////////////////////
-bool BaseBitmap::Superset(const BaseBitmap *subset) {
+bool MAFIA::BaseBitmap::Superset(const BaseBitmap *subset) {
     // No need to check for superset when the count is too small
     if (_count <= subset->_count) {
         return false;
@@ -259,7 +259,7 @@ bool BaseBitmap::Superset(const BaseBitmap *subset) {
 ///                          parameter bitmap (this bitmap has a 1 in ALL
 ///                          positions that parameter bitmap does )
 /////////////////////////////////////////////////////////////////////
-bool BaseBitmap::SupersetEq(const BaseBitmap *subset) {
+bool MAFIA::BaseBitmap::SupersetEq(const BaseBitmap *subset) {
     // No need to check for superset when the count is too small
     if (_count < subset->_count) {
         return false;

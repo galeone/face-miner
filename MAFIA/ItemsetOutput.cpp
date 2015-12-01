@@ -47,14 +47,14 @@ THE POSSIBILITY OF SUCH DAMAGE.
 ///
 /// @param filename           filename for output
 /////////////////////////////////////////////////////////////////////
-ItemsetOutput::ItemsetOutput(char *filename) {
+MAFIA::ItemsetOutput::ItemsetOutput(char *filename) {
     out = fopen(filename,"wt");
 }
 
 /////////////////////////////////////////////////////////////////////
 /// Close file output stream
 /////////////////////////////////////////////////////////////////////
-ItemsetOutput::~ItemsetOutput() {
+MAFIA::ItemsetOutput::~ItemsetOutput() {
     if (out)
         fclose(out);
 }
@@ -64,7 +64,7 @@ ItemsetOutput::~ItemsetOutput() {
 ///
 /// @return true if file is open
 /////////////////////////////////////////////////////////////////////
-int ItemsetOutput::isOpen() {
+int MAFIA::ItemsetOutput::isOpen() {
     if (out)
         return 1;
     else
@@ -78,7 +78,7 @@ int ItemsetOutput::isOpen() {
 /// @param itemset         array of items
 /// @param support         support of itemset (-1 to suppress)
 /////////////////////////////////////////////////////////////////////
-void ItemsetOutput::printSet(int length, int *itemset, int support) {
+void MAFIA::ItemsetOutput::printSet(int length, int *itemset, int support) {
     for (int index = 0; index < length; index++)
         fprintf(out, "%d ", itemset[index]);
         
