@@ -5,9 +5,13 @@
 #include <QMimeDatabase>
 #include <QStringList>
 #include <iostream>
+#include <vector>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include "MAFIA/Mafia.h"
+
+#define DEBUG
 
 class FacePatternMiner : public QObject
 {
@@ -16,6 +20,12 @@ class FacePatternMiner : public QObject
 private:
     QDirIterator *_it;
     QString _mimeFilter;
+    QDir *_edgeDir;
+
+    void _preprocess();
+    void _mineMFI();
+    inline bool _validMime(QString);
+    void _appendToTestSet(const cv::Mat &);
 
 public:
     FacePatternMiner(QString dataset, QString mineFilter);
