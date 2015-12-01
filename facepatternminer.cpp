@@ -84,7 +84,6 @@ void FacePatternMiner::_preprocess() {
         const double c = 1;
         // Scalar is a vector of quartets, we're working on grayscale thus we extract only the first channel
         double threshold = mu[0] + c * sigma[0];
-        std::cout << cv::mean(mu) << " " <<  cv::mean(sigma) << std::endl;
         cv::Mat thresRes;
         cv::threshold(grad,thresRes, threshold, 255, CV_THRESH_BINARY);
 
