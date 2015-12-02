@@ -6,6 +6,17 @@ FacePatternMiner::FacePatternMiner(QString dataset, QString mimeFilter) {
     if(!_edgeDir->exists()) {
         QDir().mkdir(_edgeDir->path());
     }
+    auto setPath = _edgeDir->absolutePath().append(QString("/"));
+    _positiveDB = new QFile(setPath + QString("positive.db"));
+    if(_positiveDB->exists()) {
+        _positiveDB->remove();
+    }
+    _negativeDB = new QFile(setPath + QString("negative.db"));
+    if(_negativeDB->exists()) {
+        _negativeDB->remove();
+    }
+
+    _imageSize = NULL;
 }
 
 inline bool FacePatternMiner::_validMime(QString fileName) {
@@ -13,7 +24,27 @@ inline bool FacePatternMiner::_validMime(QString fileName) {
     return  mimeDB.mimeTypeForFile(fileName).inherits(_mimeFilter);
 }
 
-void FacePatternMiner::_appendToTestSet(const cv::Mat &) {
+// _appendToSet extracts the pixel position with value bin. It appends the extracted pattern to the database
+// file using the MAFIA database syntax
+void FacePatternMiner::_appendToSet(const cv::Mat1b &transaction, uchar bin, QFile *database) {
+    database->open(QFileDevice::Append);
+    std::string line = "";
+    for(auto x=0;x<transaction.cols;++x) {
+        for(auto y=0;y<transaction.rows;++y) {
+            cv::Point point(x,y);
+            if(transaction.at<uchar>(point) == bin) {
+                // Use Cantor::pair to create a bijective association between the point and a number in the database
+                line += std::to_string(Cantor::pair(point)) + " ";
+            }
+        }
+    }
+    if(line.length() > 0) {
+        line.pop_back(); // remove last space after closing bracket
+    }
+    // add newline
+    line += "\n";
+    database->write(line.c_str());
+    database->close();
 
 }
 
@@ -35,6 +66,11 @@ void FacePatternMiner::_preprocess() {
         }
 
         auto image = cv::imread(fileName.toStdString());
+
+        if(_imageSize == NULL) {
+           _imageSize = new cv::Size(image.cols,image.rows);
+        }
+
         emit preprocessing(image);
         // lets user the histogram equalization method in order to
         // equalize the distribution of greys in the original image
@@ -105,250 +141,80 @@ void FacePatternMiner::_preprocess() {
         cv::imwrite(edgeFile,dilatationRes);
 #endif
         // Appending transaction (the image), to transaction database
-        _appendToTestSet(dilatationRes);
+
+        // Creating test set for positive pattern
+        _appendToSet(dilatationRes, 255, _positiveDB);
+
+        // Creating test set for negative pattern
+        _appendToSet(dilatationRes, 0, _negativeDB);
     }
 
 }
 
-void FacePatternMiner::_mineMFI() {/*
-    // Check parameters
-    MAFIA::Mafia mafia;
-    if (argc < 5) {
-        cerr << "Usage: " << argv[0] << " [-mfi/-fci/-fi] [min sup (percent)] " << endl;
-        cerr << "\t[-ascii/-binary] [input filename] " << endl;
-        cerr << "\t[output filename (optional)]" << endl;
-        cerr << "Ex: " << argv[0] << " -mfi .5 -ascii connect4.ascii mfi.txt" << endl;
-        cerr << "Ex: " << argv[0] << " -mfi .3 -binary chess.binary" << endl;
-        exit(0);
+// _mineMFI mines the Most Frequent Itemset in the database.
+// The database must be in ASCII format, according to the MAFIA Syntax.
+// Returns the MFI as a b/w image.
+// minSupport is a parameter passed to MAFIA algoritm, to prune results in the depth first search
+cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport) {
+    std::ostringstream out;
+    out << std::setprecision(3) << minSupport;
+    std::string minSupportStr(out.str());
+    std::string ext(minSupportStr + ".mfi");
+
+    QString mfiPath = database->fileName() + QString(ext.c_str());
+    QFile mfiFile(mfiPath);
+    if(!mfiFile.exists()) {
+        QString executing("./MAFIA -mfi ");
+        executing.append(minSupportStr.c_str());
+        executing.append(" -ascii ");
+        executing.append(database->fileName());
+        executing.append(" ");
+        executing.append(mfiPath);
+        std::cout << executing.toStdString() << std::endl;
+        QProcess::execute(executing);
     }
 
-    // time hook
-    time(&total_start);
+    cv::Mat1b ret = cv::Mat1b::zeros(*_imageSize);
 
-    // get the algorithm type
-    method = argv[1];
-
-    // Minimum support as a fraction
-    MSF = atof(argv[2]);
-
-    if (strcmp(argv[3], "-ascii") == 0)
-        F1FromFile(argv[4], true);
-    else if (strcmp(argv[3], "-binary") == 0)
-        mafia.F1FromFile(argv[4], false);
-    else {
-        cerr << "File format must be -ascii or -binary" << endl;
-        exit(1);
+    if(!mfiFile.open(QFileDevice::ReadOnly)) {
+        throw new std::runtime_error("Unable to open " + mfiPath.toStdString());
     }
 
-    if (argc == 6) {
-        outputMFI = true;
-        outFilename = argv[5];
-    }
+    QTextStream in(&mfiFile);
 
-    // Create a null node to begin the DFS tree
-    NullTrans = new Bitmap(TransCount);
-    NullTrans->FillOnes();
-    NullTrans->_count = TransCount;
-    ItemSet NullList;
+    auto lineCount = 1;
 
-    MFIBySizes = new int[MAX_ITEMSET_SIZE];
-    for (int h = 0; h < MAX_ITEMSET_SIZE; h++) {
-        MFIBySizes[h] = 0;
-    }
-
-    // Set size of F1
-    FullF1size = F1size = F1.size();
-
-    // if F1 is not empty
-    if (FullF1size != 0) {
-
-        BaseBitmap *NullName = new BaseBitmap(FullF1size);
-        MFI.reserve(100000);
-
-        int p = 0;
-        ItemMap = new int[FullF1size];
-        ItemsetBuffy = new int[FullF1size];
-
-        // Rename items in F1
-        for (NodeList::iterator nli = F1.begin(); nli != F1.end(); nli++) {
-            // store old itemid
-            ItemMap[p] = (*nli)->Prefix;
-
-            // assign new itemid
-            (*nli)->Prefix = p;
-
-            // assign name bitmaps
-            (*nli)->Name = new BaseBitmap(FullF1size);
-            (*nli)->Name->FillEmptyPosition(p);
-            (*nli)->Name->_count = 1;
-            p++;
-        }
-
-        // don't merge equivalent items for FI output
-        if (method.compare("-fi") != 0) {
-           MergeRepeatedItemsets();
-        }
-
-        F1size = F1.size();
-
-        // Create global tail
-        maxtail = F1size * (F1size + 1) / 2;
-        gTail = new TailElement[maxtail];
-
-        // Create buffer for sorting
-        TailBuffy = new TailElement[F1size];
-
-        // Create buffer for estimating size of each subtree
-        EstimateSize = (int)ceil(F1size / (double)EstimateDiv);
-        EstimateBuffy = new SubtreeEstimate[EstimateSize];
-        for (int estimateIndex = 0; estimateIndex < EstimateSize; estimateIndex++) {
-            EstimateBuffy[estimateIndex].Count = 1;
-            EstimateBuffy[estimateIndex].Sum = estimateIndex * EstimateDiv * estimateIndex * EstimateDiv / 2;
-        }
-
-        // Initialize global tail
-        int uu;
-        for (uu = 0; uu < maxtail; uu++) {
-            gTail[uu].Item = -1;
-            gTail[uu].Count = 0;
-        }
-
-        // Fill global tail
-        for (uu = 0; uu < F1size; uu++) {
-            gTail[uu].Item = uu;
-            gTail[uu].Count = F1[uu]->Trans->_count;
-
-            // assign tail index
-            F1[uu]->tBegin = uu + 1;
-            if (uu == F1size - 1)
-                F1[uu]->tBegin = -1;
-
-            TempName = new BaseBitmap(FullF1size);
-
-            // add a buffer element for each item in F1
-            BaseBitmap *name = new BaseBitmap(FullF1size);
-            NameBuffy.push_back(name);
-            Bitmap *buff = new Bitmap(TransCount);
-            TransBuffy.push_back(buff);
-            TreeNode *newNode = new TreeNode();
-            NodeBuffy.push_back(newNode);
-        }
-
-        srand(666);
-        bool FHUT;
-
-        // start algorithm timer
-        clock_t start, finish;
-        double duration = -1;
-        start = clock();
-
-        time(&algorithm_start);
-
-        // create root node and its associated tail
-        Root = new TreeNode(NullName, NullTrans, 0, 0, -1, 0, F1size);
-
-        //Nothing is in MFI, so nothing is relevant
-        Root->rBegin = 0;
-        Root->rEnd = 0;
-
-        // run the appropriate algorithm
-        if (method.compare("-fci") == 0) {
-            //cout << "running closure (FCI) algorithm..." << endl;
-
-            GoFHUT = false;      // FHUT flag
-            HUTMFI = false;      // HUTMFI flag
-            PEPrune = true;      // PEPrune flag
-            Reorder = true;      // Reorder flag
-            MethodIsFCI = true;
-
-            MAFIA(Root, false, FHUT, false);
-        } else if (method.compare("-mfi") == 0) {
-            //cout << "running MFI algorithm..." << endl;
-            GoFHUT = true;      // FHUT flag
-            HUTMFI = true;      // HUTMFI flag
-            PEPrune = true;     // PEPrune flag
-            Reorder = true;     // Reorder flag
-
-            MAFIA(Root, true, FHUT, false);
-        } else if (method.compare("-fi") == 0) {
-            if (outputMFI) {
-                // open output file
-                outFile = new ItemsetOutput(outFilename);
-                if (!outFile->isOpen()) {
-                    cerr << "Output file not open!" << endl;
-                    exit(1);
-                }
+    while(!in.atEnd()) {
+         QString line = in.readLine();
+         QStringList coords = line.split(" ");
+         if(coords.length() > 0) {
+             // the last element of the line (minSupp is between brackets)
+            coords.pop_back();
+            for(const QString &coord : coords) {
+                auto pos = Cantor::unpair(std::stoi(coord.toStdString()));
+                ret.at<uchar>(pos) = 255;
             }
+         } else {
+             break;
+         }
 
-            //cout << "running FI algorithm..." << endl;
-            GoFHUT = false;      // FHUT flag
-            HUTMFI = false;      // HUTMFI flag
-            PEPrune = false;     // PEPrune flag
-            Reorder = false;     // Reorder flag
-            MethodIsFI = true;
-
-            MAFIA(Root, false, FHUT, false);
-
-            if (outputMFI) {
-                delete outFile;
-            }
-        } else {
-            cerr << "Invalid algorithm option!" << endl;
-            exit(0);
-        }
-
-        finish = clock();
-        duration = (finish - start) / (double)CLOCKS_PER_SEC;
-
-        //printf( "Algorithm CPU time: %.3f seconds.\n", duration );
-
-        time(&algorithm_finish);
-        algorithm_time = difftime(algorithm_finish, algorithm_start);
-        printf("Algorithm time:        %.2f seconds.\n", algorithm_time);
-    } else {
-        MFIBySizes[0]++;
+         ++lineCount;
     }
 
+    mfiFile.close();
 
-    // Print out MFI length distribution
-    //for (int sizeIndex = 0; sizeIndex <= maxItemsetSize; sizeIndex++) {
-    //    cout << sizeIndex << " " << MFIBySizes[sizeIndex] << endl;
-    //}
-
-
-    if (outputMFI && !MethodIsFI) {
-        // PrintMFI to a file
-        //cout << "Printing out the mfi..." << endl;
-        time(&print_start);
-
-        PrintMFI();
-
-        time(&print_finish);
-        print_time = difftime(print_finish, print_start);
-        printf("Printing output time:  %.2f seconds.\n", print_time);
-    }
-
-    time(&total_finish);
-    total_time = difftime(total_finish, total_start);
-    printf("Total time:            %.2f seconds.\n\n", total_time);
-
-    // output stat data
-    cout << "MinSup:      " << MS << endl;
-    cout << "TransCount:  " << TransCount << endl;
-    cout << "F1size:      " << FullF1size << endl;
-    if (!MethodIsFI)
-        cout << "MFISize:     " << MFI.size() << endl;
-    else
-        cout << "MFISize:     " << MFISize << endl;
-
-    cout << "MFIAvg:      " << MFIDepth / (double) MFISize << endl << endl;
-    */
+    return ret;
 }
 
 // slot
 void FacePatternMiner::start() {
     _preprocess();
     emit proprocessing_terminated();
-    _mineMFI();
+    auto positiveMFI = _mineMFI(_positiveDB, 0.66);
+    cv::namedWindow("positive MFI");
+    cv::imshow("positive MFI", positiveMFI);
+    auto negativeMFI = _mineMFI(_negativeDB, 0.99);
+    cv::namedWindow("negative MFI");
+    cv::imshow("negative MFI", negativeMFI);
     emit mining_terminated();
 }

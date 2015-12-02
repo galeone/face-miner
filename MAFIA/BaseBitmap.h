@@ -50,9 +50,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 ///////////////////////////////////////////////////////////////////
 /// A simple bitmap class with only uncompressed data for name bitmaps
 ///////////////////////////////////////////////////////////////////
-
-namespace MAFIA {
-
 class BaseBitmap {
 
 public:
@@ -127,7 +124,5 @@ public:
 };
 
 /** @} */
-
-}
 
 #endif

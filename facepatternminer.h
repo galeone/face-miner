@@ -4,12 +4,17 @@
 #include <QDirIterator>
 #include <QMimeDatabase>
 #include <QStringList>
+#include <QTextStream>
+#include <QStringList>
+#include <QProcess>
 #include <iostream>
+#include <iomanip>
 #include <vector>
+#include <exception>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include "MAFIA/Mafia.h"
+#include "cantor.h"
 
 #define DEBUG
 
@@ -21,11 +26,13 @@ private:
     QDirIterator *_it;
     QString _mimeFilter;
     QDir *_edgeDir;
+    QFile *_positiveDB, *_negativeDB;
+    cv::Size *_imageSize;
 
     void _preprocess();
-    void _mineMFI();
+    cv::Mat1b _mineMFI(QFile *,float);
     inline bool _validMime(QString);
-    void _appendToTestSet(const cv::Mat &);
+    void _appendToSet(const cv::Mat1b &, uchar , QFile*);
 
 public:
     FacePatternMiner(QString dataset, QString mineFilter);

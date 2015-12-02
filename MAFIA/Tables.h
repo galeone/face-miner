@@ -43,8 +43,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 
 #define TABLES_H
 
-namespace MAFIA {
-
 /// BitTable[i] contains a 1 at only position i
 const unsigned int BitTable[32] = {
                              2147483648UL, 1073741824UL, 536870912UL, 268435456UL,
@@ -66126,6 +66124,5 @@ const unsigned int CompTable[256][256] = {
             }
         };
 
-}
 
 #endif

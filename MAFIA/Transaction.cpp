@@ -49,7 +49,7 @@ using namespace std;
 ///
 /// @return     pointer to a new Transaction
 /////////////////////////////////////////////////////////////////////
-MAFIA::Transaction *MAFIA::InputData::getNextTransaction() {
+Transaction *InputData::getNextTransaction() {
     char c;
 
     int itemIndex = 0;
@@ -120,7 +120,7 @@ MAFIA::Transaction *MAFIA::InputData::getNextTransaction() {
 /// @param ITEMBUFFER       pointer to buffer for storing a transaction
 /// @param IS_ASCII         true if file is in ASCII format
 /////////////////////////////////////////////////////////////////////
-MAFIA::InputData::InputData(char *filename, int *ITEMBUFFER, bool IS_ASCII) {
+InputData::InputData(char *filename, int *ITEMBUFFER, bool IS_ASCII) {
     if (IS_ASCII)
         inputFile.open(filename);
     else
@@ -133,7 +133,7 @@ MAFIA::InputData::InputData(char *filename, int *ITEMBUFFER, bool IS_ASCII) {
 /////////////////////////////////////////////////////////////////////
 /// Close the input file
 /////////////////////////////////////////////////////////////////////
-MAFIA::InputData::~InputData() {
+InputData::~InputData() {
     inputFile.close();
 }
 
@@ -142,7 +142,7 @@ MAFIA::InputData::~InputData() {
 ///
 /// @return true if file is open
 /////////////////////////////////////////////////////////////////////
-int MAFIA::InputData::isOpen() {
+int InputData::isOpen() {
     return inputFile.is_open();
 }
 /** @} */

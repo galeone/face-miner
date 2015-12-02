@@ -45,7 +45,6 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "Bitmap.h"
 #include "BaseBitmap.h"
 
-namespace MAFIA {
 
 /////////////////////////////////////////////////////////////////////
 /// @ingroup AlgorithmicComponents
@@ -100,14 +99,7 @@ public:
             
         }
 
-    /////////////////////////////////////////////////////////////////////
-    /// Destructor.  Remove node from memory, but do NOT free up the associated
-    ///     bitmaps, since they can be reused.
-    /////////////////////////////////////////////////////////////////////
-    ~TreeNode() {
-        Trans = NULL;
-        Name = NULL;
-    }
+    ~TreeNode();
 
     BaseBitmap *Name;        ///< Bitmap representing the head of the node   
     Bitmap *Trans;           ///< Bitmap storing the list of transactions
@@ -124,5 +116,13 @@ public:
 };
 
 
+/////////////////////////////////////////////////////////////////////
+/// Destructor.  Remove node from memory, but do NOT free up the associated
+///     bitmaps, since they can be reused.
+/////////////////////////////////////////////////////////////////////
+TreeNode::~TreeNode() {
+    Trans = NULL;
+    Name = NULL;
 }
+
 #endif
