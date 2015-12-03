@@ -6,6 +6,7 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     ui(new Ui::FacialRecognition)
 {
     ui->setupUi(this);
+    this->showMaximized();
 
     // register cv::Mat type, thus it can be used in signals and slots
     qRegisterMetaType<cv::Mat>("cv::Mat");
@@ -43,6 +44,9 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     // set TraingStreamView to fixed size
     _getTrainingStreamView()->setSize(streamSize);
 
+    _getPositivePatternStreamView()->setSize(streamSize);
+    _getNegativePatternStreamView()->setSize(streamSize);
+
     // Create a thread for the miner
     QThread *minerThread = new QThread();
 
@@ -51,6 +55,7 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     //FacePatternMiner *patternMiner = new FacePatternMiner("./datasets/BioID-FaceDatabase-V1.2/", QString("image/x-portable-graymap"));
     //FacePatternMiner *patternMiner = new FacePatternMiner("./datasets/yalefaces/", QString("image/x-portable-graymap"));
     FacePatternMiner *patternMiner = new FacePatternMiner("./datasets/jaffe/", QString("image/x-portable-graymap"));
+    //FacePatternMiner *patternMiner = new FacePatternMiner("./datasets/mitcbcl/train/face/", QString("image/x-portable-graymap"));
 
 
     // move the miner to his own thread
@@ -59,8 +64,14 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     // connect signal start of the thread to the start() method of the miner
     connect(minerThread, &QThread::started, patternMiner, &FacePatternMiner::start);
 
-    // connect processing signal of miner to the GUI, to show what image has being processed
+    // connect preprocessing signal of miner to the GUI, to show what image has being processed
     connect(patternMiner, &FacePatternMiner::preprocessing, this, &FacialRecognition::_updateTrainingStreamView);
+
+    // connect preprocessingTerminated signal of miner to the GUI, to show the mined positive and negative pattern
+    connect(patternMiner, &FacePatternMiner::mining_terminated,[=](const cv::Mat &positive, const cv::Mat &negative) {
+       this->_updatePositivePatternStreamView(positive);
+       this->_updateNegativePatternStreamView(negative);
+    });
 
     // start the miner thread
     minerThread->start();
@@ -74,6 +85,14 @@ void FacialRecognition::_updateCamView(const cv::Mat& frame)
 
 void FacialRecognition::_updateTrainingStreamView(const cv::Mat& frame) {
     _getTrainingStreamView()->setImage(Cv2Qt::cvMatToQImage(frame));
+}
+
+void FacialRecognition::_updatePositivePatternStreamView(const cv::Mat& frame) {
+    _getPositivePatternStreamView()->setImage(Cv2Qt::cvMatToQImage(frame));
+}
+
+void FacialRecognition::_updateNegativePatternStreamView(const cv::Mat& frame) {
+    _getNegativePatternStreamView()->setImage(Cv2Qt::cvMatToQImage(frame));
 }
 
 void FacialRecognition::_handleClick(const cv::Point& point)
@@ -92,4 +111,12 @@ VideoStreamView* FacialRecognition::_getCamStreamView() {
 
 VideoStreamView* FacialRecognition::_getTrainingStreamView() {
     return reinterpret_cast<VideoStreamView*>(ui->gridLayout->itemAtPosition(0,2)->widget());
+}
+
+VideoStreamView* FacialRecognition::_getPositivePatternStreamView() {
+    return reinterpret_cast<VideoStreamView*>(ui->gridLayout->itemAtPosition(2,0)->widget());
+}
+
+VideoStreamView* FacialRecognition::_getNegativePatternStreamView() {
+    return reinterpret_cast<VideoStreamView*>(ui->gridLayout->itemAtPosition(2,2)->widget());
 }

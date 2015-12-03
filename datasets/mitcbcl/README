@@ -1,0 +1,90 @@
+This is a database of faces and non-faces, that has been used
+extensively at the Center for Biological and Computational Learning at
+MIT.  It is freely available for research use.  If you use this
+database in published work, you must reference:
+
+CBCL Face Database #1
+MIT Center For Biological and Computation Learning
+http://www.ai.mit.edu/projects/cbcl
+
+
+CONTENTS:
+
+Training set: 2,429 faces, 4,548 non-faces 
+Test set: 472 faces, 23,573 non-faces
+
+The training set face were generated for [3].  The training set non-faces were generated for [2].  The test set is a subset of the CMU Test Set 1 [4], information about how the subset was chosen can be found in [2].
+
+The tarballs train.tar.gz and test.tar.gz contain subdirectories with
+the images stored in individual pgm files.  These pgm images can be
+processed using the functions in the c-code directory.  Note that the
+c-code directory is not a complete program, merely a collection of
+functions that are useful for reading in the pgm files.  These
+functions have successfully been used numerous times to read in and
+convert this data; we are unlikely to have time to respond to requests
+regarding help with these functions, or offer other programming help.
+
+For those who don't want to work with the image files directly, we
+provide the files svm.train.normgrey and svm.test.normgrey.  These
+files are in the proper format to be read by the SvmFu SVM solver
+(http://www.ai.mit.edu/projects/cbcl/), but should be easily
+convertible for use by other algorithms.  In each file, the first line
+contains the number of examples (6,977 training, 24,045 test), the
+second line contains the number of dimensions (19x19 = 361).  Each
+additional line consists of a single image, histogram equalized and
+normalized so that all pixel values are between 0 and 1, followed by a
+1 for a face or a -1 for a non-face.  This is the data that was used
+in [1].
+
+A slightly modified version of the dataset was used in [2] --- the
+histogram normalization was identical, but additionally, the corners
+of the image were masked out.
+
+For any questions regarding this dataset, please contact Stan Bileschi
+(bileschi@mit.edu)
+
+
+[1]
+@TECHREPORT{alvira2001,
+  AUTHOR = {M. Alvira and R. Rifkin},
+  TITLE  = {An Empirical Comparison of SNoW and SVMs for Face Detection},
+  INSTITUTION  = {Center for Biological and Computational Learning, MIT},
+  YEAR = {2001},
+  TYPE = {A.I. memo},
+  ADDRESS = {Cambridge, MA},
+  NUMBER = {2001-004}
+}
+
+
+[2]
+@TECHREPORT{heisele2000,
+  AUTHOR = {B. Heisele and T. Poggio and M. Pontil},
+  TITLE  = {Face Detection in Still Gray Images},
+  INSTITUTION  = {Center for Biological and Computational Learning, MIT},
+  YEAR = {2000},
+  TYPE = {A.I. memo},
+  ADDRESS = {Cambridge, MA},
+  NUMBER = {1687}
+}
+
+[3]
+@PHDTHESIS{sung96,
+AUTHOR = {K.-K. Sung},
+TITLE = {Learning and Example Selection for Object and Pattern Recognition},
+SCHOOL = { MIT, Artificial Intelligence Laboratory and Center for Biological
+and Computational Learning},
+ADDRESS = {Cambridge, MA},
+YEAR = {1996}
+}
+
+[4]
+@ARTICLE{rowley98,
+  AUTHOR = {H. A. Rowley and S. Baluja and T. Kanade},
+  TITLE  = {Neural Network-Based Face Detection},
+  JOURNAL = {IEEE Transactions on Pattern Analysis and Machine
+Intelligence},
+  YEAR = {1998},
+  PAGES = {23--38},
+  VOLUME = {20},
+  NUMBER = {1}
+ }

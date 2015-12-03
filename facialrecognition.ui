@@ -25,7 +25,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>192</width>
+      <width>269</width>
       <height>80</height>
      </rect>
     </property>
@@ -33,6 +33,20 @@
      <property name="sizeConstraint">
       <enum>QLayout::SetMinimumSize</enum>
      </property>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblPositiveP">
+       <property name="text">
+        <string>Positive pattern</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabel" name="lblNevativeP">
+       <property name="text">
+        <string>Negative Pattern</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="0">
       <widget class="VideoStreamView" name="_videoStreamView">
        <property name="sizePolicy">
@@ -54,12 +68,32 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>0</height>
+        </size>
+       </property>
       </spacer>
      </item>
      <item row="0" column="2">
       <widget class="VideoStreamView" name="_trainingStreamView">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Current Item</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="VideoStreamView" name="_positivePattern">
+       <property name="text">
+        <string>Positive Patterm Img</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="VideoStreamView" name="_negativePattern">
+       <property name="text">
+        <string>Negative Pattern Img</string>
        </property>
       </widget>
      </item>

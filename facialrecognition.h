@@ -28,6 +28,12 @@ private:
     Ui::FacialRecognition *ui;
     VideoStreamView* _getCamStreamView();
     VideoStreamView* _getTrainingStreamView();
+    VideoStreamView* _getPositivePatternStreamView();
+    VideoStreamView* _getNegativePatternStreamView();
+
+    void _updatePositivePatternStreamView(const cv::Mat&);
+    void _updateNegativePatternStreamView(const cv::Mat&);
+
 
 private slots:
     void _updateCamView(const cv::Mat&);

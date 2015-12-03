@@ -10,11 +10,12 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
-#include <exception>
+#include <stdexcept>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include "cantor.h"
+#include "featureclassifier.h"
 
 #define DEBUG
 
@@ -23,25 +24,28 @@ class FacePatternMiner : public QObject
     Q_OBJECT
 
 private:
-    QDirIterator *_it;
-    QString _mimeFilter;
+    QString _mimeFilter, _dataset;
     QDir *_edgeDir;
-    QFile *_positiveDB, *_negativeDB;
+    QFile *_positiveDB, *_negativeDB, *_imageSizeFile;
     cv::Size *_imageSize;
+    cv::Mat1b _positiveMFI, _negativeMFI;
+    std::vector<cv::Point> _positiveMFICoordinates, _negativeMFICoordinates;
 
-    void _preprocess();
-    cv::Mat1b _mineMFI(QFile *,float);
     inline bool _validMime(QString);
+    void _preprocess();
     void _appendToSet(const cv::Mat1b &, uchar , QFile*);
+    cv::Mat1b _mineMFI(QFile *,float, std::vector<cv::Point> &);
+    std::string _edgeFileOf(QString);
+    void _buildClassifier();
 
 public:
     FacePatternMiner(QString dataset, QString mineFilter);
 
 signals:
     void preprocessing(const cv::Mat &);
-    void proprocessing_terminated();
+    void preprocessing_terminated();
     void mining_pattern(const cv::Mat &);
-    void mining_terminated();
+    void mining_terminated(const cv::Mat &, const cv::Mat &);
 
 public slots:
    void  start();
