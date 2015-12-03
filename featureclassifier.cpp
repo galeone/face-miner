@@ -1,6 +1,7 @@
 #include "featureclassifier.h"
 
 void FeatureClassifier::setData(cv::Mat &raw, cv::Mat &edge) {
+    _c1 = _c2 = _c3 = _c4 = 0;
     for(const cv::Point &point : _positiveMFICoordinates) {
         //c1 is the sum of pixel intesities of the positive feature pattern
         // in the raw image

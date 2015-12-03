@@ -24,7 +24,9 @@ SOURCES += main.cpp\
     videostreamview.cpp \
     facepatternminer.cpp \
     cantor.cpp \
-    featureclassifier.cpp
+    featureclassifier.cpp \
+    varianceclassifier.cpp \
+    svmclassifier.cpp
 
 HEADERS  += facialrecognition.h \
     cameracalibrationworker.h \
@@ -35,7 +37,9 @@ HEADERS  += facialrecognition.h \
     facepatternminer.h \
     cantor.h \
     iclassifier.h \
-    featureclassifier.h
+    featureclassifier.h \
+    varianceclassifier.h \
+    svmclassifier.h
 
 FORMS    += facialrecognition.ui
 

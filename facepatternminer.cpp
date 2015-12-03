@@ -4,8 +4,9 @@
 #undef DEBUG
 
 
-FacePatternMiner::FacePatternMiner(QString dataset, QString mimeFilter) {
-    _dataset = dataset;
+FacePatternMiner::FacePatternMiner(QString positiveTestSet, QString negativeTestSet, QString mimeFilter) {
+    _positiveTestSet = positiveTestSet;
+    _negativeTestSet = negativeTestSet;
     _mimeFilter = mimeFilter;
     _edgeDir = new QDir("edge");
     if(!_edgeDir->exists()) {
@@ -92,7 +93,7 @@ void FacePatternMiner::_appendToSet(const cv::Mat1b &transaction, uchar bin, QFi
 void FacePatternMiner::_preprocess() {
     // If I need to fill the databases
     if(_positiveDB->size() == 0 && _negativeDB->size() == 0) {
-        QDirIterator *it = new QDirIterator(_dataset);
+        QDirIterator *it = new QDirIterator(_positiveTestSet);
         while(it->hasNext()) {
             auto fileName = it->next();
             if(!_validMime(fileName)) {
@@ -179,7 +180,7 @@ void FacePatternMiner::_preprocess() {
             };
             cv::Mat structuringElement(3,3, CV_8UC1, &structuringMatrix);
             cv::Mat dilatationRes;
-            cv::dilate(thresRes,dilatationRes,structuringElement);
+            cv::dilate(thresRes, dilatationRes, structuringElement);
 
             emit preprocessing(dilatationRes);
 
@@ -283,9 +284,10 @@ void FacePatternMiner::_buildClassifier() {
     // scale according to the dimension of the lowest item to match
     // void resize(InputArray src, OutputArray dst, Size dsize, double fx=0, double fy=0, int interpolation=INTER_LINEAR )
 
-    QDirIterator *it = new QDirIterator(_dataset);
-    while(it->hasNext()) {
-        auto fileName = it->next();
+    QDirIterator *positiveIt = new QDirIterator(_positiveTestSet);
+    QDirIterator *negativeIt = new QDirIterator(_negativeTestSet);
+    while(positiveIt->hasNext()) {
+        auto fileName = positiveIt->next();
         if(!_validMime(fileName)) {
             continue;
         }
@@ -307,8 +309,35 @@ void FacePatternMiner::_buildClassifier() {
                 std::cout << "T2 = " << fc.getT2() << std::endl;
             }
         }
-        std::cout << "Thresholds: " << fc.getT1() << " " << fc.getT2() << std::endl;
-        std::cout << "Age: " << age << std::endl;
+        std::cout << "[P]Thresholds: " << fc.getT1() << " " << fc.getT2() << std::endl;
+        std::cout << "[P]Age: " << age << std::endl;
+    }
+
+    while(negativeIt->hasNext()) {
+        auto fileName = negativeIt->next();
+        if(!_validMime(fileName)) {
+            continue;
+        }
+
+        auto raw = cv::imread(fileName.toStdString());
+        auto edge = cv::imread(_edgeFileOf(fileName));
+
+        fc.setData(raw, edge);
+        float r1diff, r2diff;
+        int age = 1;
+        while(!fc.rule1(r1diff) || !fc.rule2(r2diff)) {
+            std::cout << "AGE "<< age << std::endl;
+            while(!fc.rule1(r1diff)) {
+                fc.setT1(fc.getT1()+1);
+                std::cout << "T1 = " << fc.getT1() << std::endl;
+            }
+            while(!fc.rule2(r2diff)) {
+                fc.setT2(fc.getT2()+1);
+                std::cout << "T2 = " << fc.getT2() << std::endl;
+            }
+        }
+        std::cout << "[N]Thresholds: " << fc.getT1() << " " << fc.getT2() << std::endl;
+        std::cout << "[N]Age: " << age << std::endl;
     }
 }
 

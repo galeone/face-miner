@@ -51,11 +51,11 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     QThread *minerThread = new QThread();
 
     // Create the face pattern miner
-    // TODO: make the dataset selectable from the view
+    // TODO: make the dataset with positive and negative items selectable from the view
     //FacePatternMiner *patternMiner = new FacePatternMiner("./datasets/BioID-FaceDatabase-V1.2/", QString("image/x-portable-graymap"));
     //FacePatternMiner *patternMiner = new FacePatternMiner("./datasets/yalefaces/", QString("image/x-portable-graymap"));
-    FacePatternMiner *patternMiner = new FacePatternMiner("./datasets/jaffe/", QString("image/x-portable-graymap"));
     //FacePatternMiner *patternMiner = new FacePatternMiner("./datasets/mitcbcl/train/face/", QString("image/x-portable-graymap"));
+    FacePatternMiner *patternMiner = new FacePatternMiner("./datasets/jaffe/", QString("./datasets/non-face/"), QString("image/x-portable-graymap"));
 
 
     // move the miner to his own thread

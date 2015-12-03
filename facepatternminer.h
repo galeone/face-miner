@@ -24,7 +24,7 @@ class FacePatternMiner : public QObject
     Q_OBJECT
 
 private:
-    QString _mimeFilter, _dataset;
+    QString _mimeFilter, _positiveTestSet, _negativeTestSet;
     QDir *_edgeDir;
     QFile *_positiveDB, *_negativeDB, *_imageSizeFile;
     cv::Size *_imageSize;
@@ -39,7 +39,7 @@ private:
     void _buildClassifier();
 
 public:
-    FacePatternMiner(QString dataset, QString mineFilter);
+    FacePatternMiner(QString, QString, QString);
 
 signals:
     void preprocessing(const cv::Mat &);
