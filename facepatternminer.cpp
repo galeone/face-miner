@@ -1,7 +1,7 @@
 #include "facepatternminer.h"
 
 
-#undef DEBUG
+//#undef DEBUG
 
 
 FacePatternMiner::FacePatternMiner(QString positiveTestSet, QString negativeTestSet, QString mimeFilter) {
@@ -32,8 +32,8 @@ FacePatternMiner::FacePatternMiner(QString positiveTestSet, QString negativeTest
 
     if(_imageSizeFile->exists()) {
         _imageSizeFile->remove();
-        _imageSize = NULL;
     }
+    _imageSize = NULL;
     _imageSizeFile->open(QFileDevice::WriteOnly);
 #else
     // use previous computed db, if exists. This ReadWrite
@@ -57,8 +57,6 @@ FacePatternMiner::FacePatternMiner(QString positiveTestSet, QString negativeTest
         _imageSize = NULL;
     }
 #endif
-
-
 }
 
 inline bool FacePatternMiner::_validMime(QString fileName) {
@@ -94,6 +92,7 @@ void FacePatternMiner::_preprocess() {
     // If I need to fill the databases
     if(_positiveDB->size() == 0 && _negativeDB->size() == 0) {
         QDirIterator *it = new QDirIterator(_positiveTestSet);
+        size_t count = 0;
         while(it->hasNext()) {
             auto fileName = it->next();
             if(!_validMime(fileName)) {
@@ -125,11 +124,6 @@ void FacePatternMiner::_preprocess() {
             cv::Mat equalizedImage;
             cv::equalizeHist(image, equalizedImage);
 
-            // additional, remove noise
-            if(_imageSize->width > 100) {
-                cv::medianBlur(equalizedImage,equalizedImage,5);
-            }
-
             // TODO: emettere un altro segnale e mostrare immagine affiancata frutto del preproressing
             emit preprocessing(equalizedImage);
 
@@ -137,27 +131,19 @@ void FacePatternMiner::_preprocess() {
             // sobel operator calculate an approximation of the partial derivates, in order to find out
             // the light changing in an pixel neighborhood
 
-            cv::Mat grad_x, grad_y;
-            // from the equalized image, save into grad_x the derivate along the x axes (order 1) (order 0 to y axes)
+            cv::Mat grad;
+            // from the equalized image, save into grad the derivate along the x axes (order 1) (order 0 to y axes)
             // uses depth of 16 bit signed, to avoid overflow (the derivate can be less then zero)
-            cv::Sobel(equalizedImage, grad_x, CV_16S, 1, 0);
-            // the same of above, but along the y axes
-            cv::Sobel(equalizedImage, grad_y, CV_16S, 0, 1);
+            cv::Sobel(equalizedImage, grad, CV_16S, 1, 0);
 
             // converting from 16S to 8U (255 shades of gray LOL)
-            cv::Mat grad_x_abs, grad_y_abs;
-            cv::convertScaleAbs(grad_x, grad_x_abs);
-            cv::convertScaleAbs(grad_y, grad_y_abs);
+            cv::Mat grad_abs;
+            cv::convertScaleAbs(grad, grad_abs);
 
-            // try to approximate the gradient, using a weighted sum of the calculated partial derivates
-            // The approxiamation is G = |G_x| + |G_y|
-            cv::Mat grad;
-            cv::addWeighted(grad_x_abs, 1, grad_y_abs, 1, 0, grad);
-
-            emit preprocessing(grad);
+            emit preprocessing(grad_abs);
 
             // saving .edge image, required by the classifier
-            cv::imwrite(_edgeFileOf(fileName), grad);
+            cv::imwrite(_edgeFileOf(fileName), grad_abs);
 
             // Now we apply a segmentation algorithm, in order to remove noise from the grayscale equalized edge detected image
             cv::Scalar mu, sigma;
@@ -168,7 +154,7 @@ void FacePatternMiner::_preprocess() {
             // Scalar is a vector of quartets, we're working on grayscale thus we extract only the first channel
             double threshold = mu[0] + c * sigma[0];
             cv::Mat thresRes;
-            cv::threshold(grad,thresRes, threshold, 255, CV_THRESH_BINARY);
+            cv::threshold(image, thresRes, threshold, 255, CV_THRESH_BINARY);
 
             emit preprocessing(thresRes);
 
@@ -187,11 +173,15 @@ void FacePatternMiner::_preprocess() {
             // Appending transaction (the image), to transaction database
 
             // Creating test set for positive pattern
-            _appendToSet(dilatationRes, 255, _positiveDB);
+            // eyes moth and other mined facial features are black, thus bin = 0
+            _appendToSet(dilatationRes, 0,  _positiveDB);
 
             // Creating test set for negative pattern
-            _appendToSet(dilatationRes, 0, _negativeDB);
-
+            // bin = 255
+            _appendToSet(dilatationRes, 255, _negativeDB);
+            if(++count == 110) {
+                break;
+            }
         }
     }
 
@@ -259,8 +249,19 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport, std::vec
     return ret;
 }
 
-std::string FacePatternMiner::_edgeFileOf(QString rawFile) {
-    return _edgeDir->absolutePath().append(QString("/")).append(rawFile.split(QString("/")).last()).toStdString();
+// slot
+void FacePatternMiner::start() {
+    _preprocess();
+    emit preprocessing_terminated();
+
+    // TODO: scalare in qualche modo
+    float positiveMinSupport = 0.98, negativeMinSupport = 0.5;
+    _positiveMFI = _mineMFI(_positiveDB, positiveMinSupport, _positiveMFICoordinates);
+    // minSupp for negative mfi is the highest value possible (1) because we need to speed up the computation
+    _negativeMFI = _mineMFI(_negativeDB, negativeMinSupport, _negativeMFICoordinates);
+    emit mining_terminated(_positiveMFI, _negativeMFI);
+
+    //_buildClassifier();
 }
 
 
@@ -342,16 +343,6 @@ void FacePatternMiner::_buildClassifier() {
 }
 
 
-// slot
-void FacePatternMiner::start() {
-    _preprocess();
-    emit preprocessing_terminated();
-
-    // TODO: scalare in qualche modo
-    float positiveMinSupport = 0.67;
-    _positiveMFI = _mineMFI(_positiveDB, positiveMinSupport, _positiveMFICoordinates);
-    // minSupp for negative mfi is the highest value possible (1) because we need to speed up the computation
-    _negativeMFI = _mineMFI(_negativeDB, 1, _negativeMFICoordinates);
-    emit mining_terminated(_positiveMFI, _negativeMFI);
-    _buildClassifier();
+std::string FacePatternMiner::_edgeFileOf(QString rawFile) {
+    return _edgeDir->absolutePath().append(QString("/")).append(rawFile.split(QString("/")).last()).toStdString();
 }
