@@ -179,8 +179,9 @@ void FacePatternMiner::_preprocess() {
             // Creating test set for negative pattern
             // bin = 255
             _appendToSet(dilatationRes, 255, _negativeDB);
-            if(++count == 110) {
+            if(++count == 100) {
                 break;
+                delete it;
             }
         }
     }
@@ -261,11 +262,38 @@ void FacePatternMiner::start() {
     _negativeMFI = _mineMFI(_negativeDB, negativeMinSupport, _negativeMFICoordinates);
     emit mining_terminated(_positiveMFI, _negativeMFI);
 
+    _trainClassifiers();
     //_buildClassifier();
 }
 
+void FacePatternMiner::_trainClassifiers() {
+    // Classifiers
+    _varianceClassifier = new VarianceClassifier(_positiveMFI, _negativeMFI);
 
-void FacePatternMiner::_buildClassifier() {
+    QDirIterator *it = new QDirIterator(_positiveTestSet);
+    uint32_t totfile = 0;
+    while(it->hasNext()) {
+        ++totfile;
+        auto fileName = it->next();
+        if(!_validMime(fileName)) {
+            continue;
+        }
+        cv::Mat faceGeneric = cv::imread(fileName.toStdString());
+        cv::Mat1b faceGray;
+        if(faceGeneric.channels() > 1) {
+            cv::cvtColor(faceGeneric, faceGray, CV_BGR2GRAY);
+        } else {
+            faceGray = faceGeneric;
+        }
+        _varianceClassifier->train(faceGray);
+        emit preprocessing(faceGray);
+    }
+    delete it;
+    std::cout << totfile << "<- wtf" << std::endl;
+}
+
+
+/*void FacePatternMiner::_buildClassifier() {
 
     // TODO: threshold learning process
     // Create a classifier.
@@ -341,7 +369,7 @@ void FacePatternMiner::_buildClassifier() {
         std::cout << "[N]Age: " << age << std::endl;
     }
 }
-
+*/
 
 std::string FacePatternMiner::_edgeFileOf(QString rawFile) {
     return _edgeDir->absolutePath().append(QString("/")).append(rawFile.split(QString("/")).last()).toStdString();

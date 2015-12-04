@@ -16,6 +16,9 @@
 #include <opencv2/imgproc.hpp>
 #include "cantor.h"
 #include "featureclassifier.h"
+#include "varianceclassifier.h"
+#include "svmclassifier.h"
+#include "featureclassifier.h"
 
 #define DEBUG
 
@@ -30,13 +33,14 @@ private:
     cv::Size *_imageSize;
     cv::Mat1b _positiveMFI, _negativeMFI;
     std::vector<cv::Point> _positiveMFICoordinates, _negativeMFICoordinates;
+    VarianceClassifier *_varianceClassifier;
 
     inline bool _validMime(QString);
     void _preprocess();
     void _appendToSet(const cv::Mat1b &, uchar , QFile*);
     cv::Mat1b _mineMFI(QFile *,float, std::vector<cv::Point> &);
     std::string _edgeFileOf(QString);
-    void _buildClassifier();
+    void _trainClassifiers();
 
 public:
     FacePatternMiner(QString, QString, QString);
