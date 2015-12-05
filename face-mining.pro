@@ -26,7 +26,9 @@ SOURCES += main.cpp\
     cantor.cpp \
     featureclassifier.cpp \
     varianceclassifier.cpp \
-    svmclassifier.cpp
+    svmclassifier.cpp \
+    faceclassifier.cpp \
+    preprocessor.cpp
 
 HEADERS  += facialrecognition.h \
     cameracalibrationworker.h \
@@ -39,7 +41,9 @@ HEADERS  += facialrecognition.h \
     iclassifier.h \
     featureclassifier.h \
     varianceclassifier.h \
-    svmclassifier.h
+    svmclassifier.h \
+    faceclassifier.h \
+    preprocessor.h
 
 FORMS    += facialrecognition.ui
 

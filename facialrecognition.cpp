@@ -63,6 +63,9 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     // connect preprocessing signal of miner to the GUI, to show what image has being processed
     connect(patternMiner, &FacePatternMiner::preprocessing, this, &FacialRecognition::_updateTrainingStreamView);
 
+    // TODO: better window for preprocessed
+    connect(patternMiner, &FacePatternMiner::preprocessed, this, &FacialRecognition::_updateTrainingStreamView);
+
     // connect preprocessingTerminated signal of miner to the GUI, to show the mined positive and negative pattern
     connect(patternMiner, &FacePatternMiner::mining_terminated,[=](const cv::Mat &positive, const cv::Mat &negative) {
        this->_updatePositivePatternStreamView(positive);

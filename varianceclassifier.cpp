@@ -50,10 +50,13 @@ cv::Scalar VarianceClassifier::_getMForABC(cv::Mat &window) {
 
     //ma is the average intensity of those pixels that are
     // darker than the averate intensity in region A
+    cv::Point coord;
     for(auto x=0;x<roi_a.cols; ++x) {
-        for(auto y=0;y<=roi_a.rows;++y) {
-            if(roi_a.at<uchar>(x,y) < mu_a[0]) {
-                ma += roi_a.at<uchar>(x,y);
+        for(auto y=0;y<roi_a.rows;++y) {
+            coord.x = x; coord.y = y;
+            auto pxBrightness = roi_a.at<uchar>(coord);
+            if(pxBrightness < mu_a[0]) {
+                ma += pxBrightness;
                 ++validPx;
             }
         }
@@ -65,9 +68,11 @@ cv::Scalar VarianceClassifier::_getMForABC(cv::Mat &window) {
     //mb is the average intensity of those pixels that are
     // birghter than the averate intensity in region B
     for(auto x=0;x<roi_b.cols; ++x) {
-        for(auto y=0;y<=roi_b.rows;++y) {
-            if(roi_b.at<uchar>(x,y) > mu_b[0]) {
-                mb += roi_b.at<uchar>(x,y);
+        for(auto y=0;y<roi_b.rows;++y) {
+            coord.x = x; coord.y = y;
+            auto pxBrightness = roi_b.at<uchar>(coord);
+            if(pxBrightness > mu_b[0]) {
+                mb += pxBrightness;
                 ++validPx;
             }
         }
@@ -78,9 +83,11 @@ cv::Scalar VarianceClassifier::_getMForABC(cv::Mat &window) {
     //mc is the average intensity of those pixels that are
     // darker than the averate intensity in region C
     for(auto x=0;x<roi_c.cols; ++x) {
-        for(auto y=0;y<=roi_c.rows;++y) {
-            if(roi_c.at<uchar>(x,y) < mu_c[0]) {
-                mc += roi_a.at<uchar>(x,y);
+        for(auto y=0;y<roi_c.rows;++y) {
+            coord.x = x; coord.y = y;
+            auto pxBrightness = roi_c.at<uchar>(coord);
+            if(pxBrightness < mu_c[0]) {
+                mc += pxBrightness;
                 ++validPx;
             }
         }
@@ -89,7 +96,7 @@ cv::Scalar VarianceClassifier::_getMForABC(cv::Mat &window) {
     return cv::Scalar(ma,mb,mc);
 }
 
-bool VarianceClassifier::classify(cv::Mat &window) {
+bool VarianceClassifier::classify(cv::Mat1b &window) {
     cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
     cv::meanStdDev(window(_D), mu_d, sigma_d);
     cv::meanStdDev(window(_E), mu_e, sigma_e);
@@ -114,9 +121,12 @@ void VarianceClassifier::train(cv::Mat1b &face) {
     cv::meanStdDev(face(_D), mu_d, sigma_d);
     cv::meanStdDev(face(_E), mu_e, sigma_e);
 
+   _oldT = _t;
     while(sigma_d[0] > _t || sigma_e[0] > _t) {
         _t += 1.27;
     }
+    _t = (_t + _oldT) / 2;
+
     ++_trainingNumber;
     std::cout << "Item: " << _trainingNumber << "\nComputed threshold: " << _t << std::endl;
 

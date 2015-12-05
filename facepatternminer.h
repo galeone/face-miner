@@ -10,6 +10,7 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <QSet>
 #include <stdexcept>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -19,6 +20,7 @@
 #include "varianceclassifier.h"
 #include "svmclassifier.h"
 #include "featureclassifier.h"
+#include "faceclassifier.h"
 
 #define DEBUG
 
@@ -29,27 +31,32 @@ class FacePatternMiner : public QObject
 private:
     QString _mimeFilter, _positiveTestSet, _negativeTestSet;
     QDir *_edgeDir;
-    QFile *_positiveDB, *_negativeDB, *_imageSizeFile;
-    cv::Size *_imageSize;
+    QFile *_positiveDB, *_negativeDB, *_trainImageSizeFile;
+    cv::Size *_trainImageSize;
     cv::Mat1b _positiveMFI, _negativeMFI;
     std::vector<cv::Point> _positiveMFICoordinates, _negativeMFICoordinates;
     VarianceClassifier *_varianceClassifier;
+    FeatureClassifier *_featureClassifier;
+    SVMClassifier *_svmClassifier;
+
+    FaceClassifier *_faceClassifier;
+
+    void _preprocess();
+    void _trainClassifiers();
 
     inline bool _validMime(QString);
-    void _preprocess();
-    void _appendToSet(const cv::Mat1b &, uchar , QFile*);
+    void _addTransactionToDB(const cv::Mat1b &, uchar , QFile*);
     cv::Mat1b _mineMFI(QFile *,float, std::vector<cv::Point> &);
-    std::string _edgeFileOf(QString);
-    void _trainClassifiers();
 
 public:
     FacePatternMiner(QString, QString, QString);
 
 signals:
     void preprocessing(const cv::Mat &);
-    void preprocessing_terminated();
-    void mining_pattern(const cv::Mat &);
-    void mining_terminated(const cv::Mat &, const cv::Mat &);
+    void preprocessed(const cv::Mat &);
+    void preprocessing_terminated(); // starting mining
+    void mining_terminated(const cv::Mat &positiveMFI, const cv::Mat &negativeMFI); // starting training
+    void training_terminated();
 
 public slots:
    void  start();

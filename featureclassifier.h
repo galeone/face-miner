@@ -2,24 +2,20 @@
 #define FEATURECLASSIFIER_H
 
 #include "iclassifier.h"
+#include "preprocessor.h"
 #include <vector>
+#include <iostream>
 #include <cstdint>
 
-class FeatureClassifier {
+class FeatureClassifier : IClassifier {
 public:
     FeatureClassifier(std::vector<cv::Point> &, std::vector<cv::Point> &);
-    void setT1(float);
-    void setT2(float);
-    void setData(cv::Mat &, cv::Mat &);
-    float getT1();
-    float getT2();
-    bool rule1(float&);
-    bool rule2(float&);
-    bool rule3();
+    void train(cv::Mat1b &face);
+    void setConstants(cv::Mat1b &raw, uint32_t *_c1, uint32_t *_c2, uint32_t *_c3, uint32_t *_c4);
+    bool classify(cv::Mat1b &window);
 
 private:
-    float _t1, _t2;
-    uint32_t _c1, _c2, _c3, _c4;
+    uint32_t _t1, _t2;
     std::vector<cv::Point> _positiveMFICoordinates, _negativeMFICoordinates;
 };
 

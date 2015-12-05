@@ -1,8 +1,5 @@
 #include "facepatternminer.h"
-
-
 //#undef DEBUG
-
 
 FacePatternMiner::FacePatternMiner(QString positiveTestSet, QString negativeTestSet, QString mimeFilter) {
     _positiveTestSet = positiveTestSet;
@@ -16,7 +13,7 @@ FacePatternMiner::FacePatternMiner(QString positiveTestSet, QString negativeTest
     auto setPath = _edgeDir->absolutePath().append(QString("/"));
     _positiveDB = new QFile(setPath + QString("positive.db"));
     _negativeDB = new QFile(setPath + QString("negative.db"));
-    _imageSizeFile = new QFile(setPath + QString("image.size"));
+    _trainImageSizeFile = new QFile(setPath + QString("image.size"));
 
 #ifdef DEBUG
     // do not use previous computed db
@@ -30,31 +27,31 @@ FacePatternMiner::FacePatternMiner(QString positiveTestSet, QString negativeTest
     }
     _negativeDB->open(QFileDevice::WriteOnly);
 
-    if(_imageSizeFile->exists()) {
-        _imageSizeFile->remove();
+    if(_trainImageSizeFile->exists()) {
+        _trainImageSizeFile->remove();
     }
-    _imageSize = NULL;
-    _imageSizeFile->open(QFileDevice::WriteOnly);
+    _trainImageSize = NULL;
+    _trainImageSizeFile->open(QFileDevice::WriteOnly);
 #else
     // use previous computed db, if exists. This ReadWrite
     _positiveDB->open(QFileDevice::ReadWrite);
     _negativeDB->open(QFileDevice::ReadWrite);
-    _imageSizeFile->open(QFileDevice::ReadWrite);
+    _trainImageSizeFile->open(QFileDevice::ReadWrite);
 
-    if(_imageSizeFile->size() > 0) {
+    if(_trainImageSizeFile->size() > 0) {
         // format: cols rows
-        QTextStream in(_imageSizeFile);
+        QTextStream in(_trainImageSizeFile);
         auto sizeLine = in.readLine();
         QStringList sizes = sizeLine.split(" ");
         if(sizes.count() != 2) {
-            _imageSize = NULL;
+            _trainImageSize = NULL;
         } else {
-            _imageSize = new cv::Size(std::atoi(sizes[0].toStdString().c_str()), std::atoi(sizes[1].toStdString().c_str()));
+            _trainImageSize = new cv::Size(std::atoi(sizes[0].toStdString().c_str()), std::atoi(sizes[1].toStdString().c_str()));
         }
-        _imageSizeFile->close();
+        _trainImageSizeFile->close();
 
     } else {
-        _imageSize = NULL;
+        _trainImageSize = NULL;
     }
 #endif
 }
@@ -66,7 +63,7 @@ inline bool FacePatternMiner::_validMime(QString fileName) {
 
 // _appendToSet extracts the pixel position with value bin. It appends the extracted pattern to the database
 // file using the MAFIA database syntax
-void FacePatternMiner::_appendToSet(const cv::Mat1b &transaction, uchar bin, QFile *database) {
+void FacePatternMiner::_addTransactionToDB(const cv::Mat1b &transaction, uchar bin, QFile *database) {
     if(!database->isOpen()) {
         throw new std::logic_error(database->fileName().toStdString()+" is not open");
     }
@@ -101,84 +98,30 @@ void FacePatternMiner::_preprocess() {
 
             auto image = cv::imread(fileName.toStdString());
 
-            if(_imageSize == NULL) {
-                _imageSize = new cv::Size(image.cols,image.rows);
-                QTextStream out(_imageSizeFile);
+            if(_trainImageSize == NULL) {
+                _trainImageSize = new cv::Size(image.cols,image.rows);
+                QTextStream out(_trainImageSizeFile);
                 out << std::to_string(image.cols).c_str();
                 out << " ";
                 out << std::to_string(image.rows).c_str();
-                _imageSizeFile->close();
+                _trainImageSizeFile->close();
             }
 
             emit preprocessing(image);
-            // lets user the histogram equalization method in order to
-            // equalize the distribution of greys in the original image
-            // Thus we stretch the historgram trying to make it plan
-
-            // first, convert the image to grayscale if is not in grayscale already
-            if(image.channels() > 1) {
-                cv::cvtColor(image, image, CV_BGR2GRAY);
-            }
-
-            // second, equalize it
-            cv::Mat equalizedImage;
-            cv::equalizeHist(image, equalizedImage);
-
-            // TODO: emettere un altro segnale e mostrare immagine affiancata frutto del preproressing
-            emit preprocessing(equalizedImage);
-
-            // now we can use the sobel operator to extract the edges of the equalized image
-            // sobel operator calculate an approximation of the partial derivates, in order to find out
-            // the light changing in an pixel neighborhood
-
-            cv::Mat grad;
-            // from the equalized image, save into grad the derivate along the x axes (order 1) (order 0 to y axes)
-            // uses depth of 16 bit signed, to avoid overflow (the derivate can be less then zero)
-            cv::Sobel(equalizedImage, grad, CV_16S, 1, 0);
-
-            // converting from 16S to 8U (255 shades of gray LOL)
-            cv::Mat grad_abs;
-            cv::convertScaleAbs(grad, grad_abs);
-
-            emit preprocessing(grad_abs);
-
-            // saving .edge image, required by the classifier
-            cv::imwrite(_edgeFileOf(fileName), grad_abs);
-
-            // Now we apply a segmentation algorithm, in order to remove noise from the grayscale equalized edge detected image
-            cv::Scalar mu, sigma;
-            cv::meanStdDev(grad,mu,sigma);
-
-            // Thresholding
-            const double c = 1;
-            // Scalar is a vector of quartets, we're working on grayscale thus we extract only the first channel
-            double threshold = mu[0] + c * sigma[0];
-            cv::Mat thresRes;
-            cv::threshold(image, thresRes, threshold, 255, CV_THRESH_BINARY);
-
-            emit preprocessing(thresRes);
-
-            // last step of preprocessing, dilatation
-            int structuringMatrix[3][3] = {
-                {0,1,0},
-                {1,1,1},
-                {0,1,0}
-            };
-            cv::Mat structuringElement(3,3, CV_8UC1, &structuringMatrix);
-            cv::Mat dilatationRes;
-            cv::dilate(thresRes, dilatationRes, structuringElement);
-
-            emit preprocessing(dilatationRes);
+            std::cout << "before size: " << image.rows <<  " " << image.cols << std::endl;
+            cv::Mat1b res = Preprocessor::process(image);
+            std::cout << "after size: " << res.rows <<  " " << res.cols << std::endl;
+            emit preprocessed(res);
 
             // Appending transaction (the image), to transaction database
 
             // Creating test set for positive pattern
-            // eyes moth and other mined facial features are black, thus bin = 0
-            _appendToSet(dilatationRes, 0,  _positiveDB);
+            // mined facial features are black, thus bin = 0
+            _addTransactionToDB(res, 255,  _positiveDB);
 
             // Creating test set for negative pattern
             // bin = 255
-            _appendToSet(dilatationRes, 255, _negativeDB);
+            _addTransactionToDB(res, 0, _negativeDB);
             if(++count == 100) {
                 break;
                 delete it;
@@ -217,8 +160,6 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport, std::vec
     }
 #endif
 
-    cv::Mat1b ret = cv::Mat1b::zeros(*_imageSize);
-
     if(!mfiFile.open(QFileDevice::ReadOnly)) {
         throw new std::runtime_error("Unable to open " + mfiPath.toStdString());
     }
@@ -227,6 +168,8 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport, std::vec
 
     auto lineCount = 1;
 
+    QSet<int> coordNumSet;
+
     while(!in.atEnd()) {
         QString line = in.readLine();
         QStringList coords = line.split(" ");
@@ -234,9 +177,7 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport, std::vec
             // the last element of the line (minSupp is between brackets)
             coords.pop_back();
             for(const QString &coord : coords) {
-                auto pos = Cantor::unpair(std::stoi(coord.toStdString()));
-                ret.at<uchar>(pos) = 255;
-                coordinates.push_back(pos);
+                coordNumSet.insert(std::stoi(coord.toStdString()));
             }
         } else {
             break;
@@ -247,6 +188,13 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport, std::vec
 
     mfiFile.close();
 
+    cv::Mat1b ret = cv::Mat1b::zeros(*_trainImageSize);
+    for(auto coordNum : coordNumSet){
+        cv::Point pos = Cantor::unpair(coordNum);
+        coordinates.push_back(pos);
+        ret.at<uchar>(pos) = 255;
+    }
+
     return ret;
 }
 
@@ -254,21 +202,25 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport, std::vec
 void FacePatternMiner::start() {
     _preprocess();
     emit preprocessing_terminated();
-
-    // TODO: scalare in qualche modo
     float positiveMinSupport = 0.98, negativeMinSupport = 0.5;
     _positiveMFI = _mineMFI(_positiveDB, positiveMinSupport, _positiveMFICoordinates);
     // minSupp for negative mfi is the highest value possible (1) because we need to speed up the computation
     _negativeMFI = _mineMFI(_negativeDB, negativeMinSupport, _negativeMFICoordinates);
     emit mining_terminated(_positiveMFI, _negativeMFI);
-
     _trainClassifiers();
-    //_buildClassifier();
+    emit training_terminated();
+    // Test, pick a random image.
+    /*cv::Mat test = cv::imread("./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm");
+    _faceClassifier->classify(test);
+    cv::namedWindow("test");
+    cv::imshow("test", test); */
 }
 
 void FacePatternMiner::_trainClassifiers() {
     // Classifiers
     _varianceClassifier = new VarianceClassifier(_positiveMFI, _negativeMFI);
+    _featureClassifier = new FeatureClassifier(_positiveMFICoordinates, _negativeMFICoordinates);
+    _svmClassifier = new SVMClassifier();
 
     QDirIterator *it = new QDirIterator(_positiveTestSet);
     uint32_t totfile = 0;
@@ -286,10 +238,16 @@ void FacePatternMiner::_trainClassifiers() {
             faceGray = faceGeneric;
         }
         _varianceClassifier->train(faceGray);
+        _featureClassifier->train(faceGray);
         emit preprocessing(faceGray);
     }
     delete it;
-    std::cout << totfile << "<- wtf" << std::endl;
+    std::cout << "[+] Variance classifier sucessully trained" << std::endl;
+
+    // TODO: train feature classifier
+    // TODO: create svm classifyer
+
+    _faceClassifier = new FaceClassifier(_varianceClassifier,_featureClassifier,_svmClassifier, *_trainImageSize);
 }
 
 
@@ -370,7 +328,3 @@ void FacePatternMiner::_trainClassifiers() {
     }
 }
 */
-
-std::string FacePatternMiner::_edgeFileOf(QString rawFile) {
-    return _edgeDir->absolutePath().append(QString("/")).append(rawFile.split(QString("/")).last()).toStdString();
-}
