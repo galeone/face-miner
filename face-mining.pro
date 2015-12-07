@@ -55,12 +55,12 @@ FORMS    += facialrecognition.ui
 #DEPENDPATH += $$PWD/MAFIA
 
 # http://dragly.org/2013/11/05/copying-data-files-to-the-build-directory-when-working-with-qmake/
-copydata.commands = $(COPY_DIR) $$PWD/datasets/ $$OUT_PWD
+#copydata.commands = $(COPY_DIR) $$PWD/datasets/ $$OUT_PWD
 
-CONFIG(release, debug|release): mafiaexe.commands = $(COPY) $$PWD/build-MAFIA-Desktop-Debug/MAFIA $$OUT_PWD
-CONFIG(debug, debug|release): mafiaexe.commands = $(COPY) $$PWD/build-MAFIA-Desktop-Release/MAFIA $$OUT_PWD
-first.depends = $(first) copydata mafiaexe
-export(first.depends)
-export(mafiaexe.commands)
-export(copydata.commands)
-QMAKE_EXTRA_TARGETS += first copydata mafiaexe
+#CONFIG(release, debug|release): mafiaexe.commands = $(COPY) $$PWD/build-MAFIA-Desktop-Debug/MAFIA $$OUT_PWD
+#CONFIG(debug, debug|release): mafiaexe.commands = $(COPY) $$PWD/build-MAFIA-Desktop-Release/MAFIA $$OUT_PWD
+#first.depends = $(first) copydata mafiaexe
+#export(first.depends)
+#export(mafiaexe.commands)
+#export(copydata.commands)
+#QMAKE_EXTRA_TARGETS += first copydata mafiaexe

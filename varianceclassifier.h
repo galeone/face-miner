@@ -10,7 +10,7 @@ class VarianceClassifier : public IClassifier
 {
 public:
     VarianceClassifier(const cv::Mat &, const cv::Mat &);
-    bool classify(cv::Mat1b &) override;
+    bool classify(cv::Mat1b &);
     void train(cv::Mat1b &face);
     cv::Scalar _getMForABC(cv::Mat &window);
 

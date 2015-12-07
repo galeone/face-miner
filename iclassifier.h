@@ -7,7 +7,7 @@ class IClassifier
 {
 public:
     virtual ~IClassifier(){}
-    virtual bool classify(cv::Mat1b &) = 0;
+    //virtual bool classify(cv::Mat &) = 0;
 
 };
 

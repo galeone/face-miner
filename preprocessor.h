@@ -10,6 +10,7 @@ class Preprocessor
 public:
     static cv::Mat1b process(cv::Mat image);
     static cv::Mat1b edge(cv::Mat image);
+    static cv::Mat1b gray(cv::Mat image);
 };
 
 #endif // PREPROCESSOR_H

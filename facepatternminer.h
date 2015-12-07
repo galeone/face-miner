@@ -29,7 +29,7 @@ class FacePatternMiner : public QObject
     Q_OBJECT
 
 private:
-    QString _mimeFilter, _positiveTestSet, _negativeTestSet;
+    QString _mimeFilter, _positiveTrainSet, _negativeTrainSet, _positiveTestSet, _negativeTestSet;
     QDir *_edgeDir;
     QFile *_positiveDB, *_negativeDB, *_trainImageSizeFile;
     cv::Size *_trainImageSize;
@@ -49,7 +49,7 @@ private:
     cv::Mat1b _mineMFI(QFile *,float, std::vector<cv::Point> &);
 
 public:
-    FacePatternMiner(QString, QString, QString);
+    FacePatternMiner(QString train_positive, QString train_negative, QString test_positive, QString test_negative, QString mime = "image/x-portable-graymap");
 
 signals:
     void preprocessing(const cv::Mat &);

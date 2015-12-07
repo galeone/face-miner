@@ -1,10 +1,13 @@
 #include "facepatternminer.h"
 //#undef DEBUG
+FacePatternMiner::FacePatternMiner(QString train_positive, QString train_negative, QString test_positive, QString test_negative, QString mime) {
+    _positiveTrainSet = train_positive;
+    _negativeTrainSet = train_negative;
 
-FacePatternMiner::FacePatternMiner(QString positiveTestSet, QString negativeTestSet, QString mimeFilter) {
-    _positiveTestSet = positiveTestSet;
-    _negativeTestSet = negativeTestSet;
-    _mimeFilter = mimeFilter;
+    _positiveTestSet = test_positive;
+    _negativeTestSet = test_negative;
+
+    _mimeFilter = mime;
     _edgeDir = new QDir("edge");
     if(!_edgeDir->exists()) {
         QDir().mkdir(_edgeDir->path());
@@ -88,8 +91,8 @@ void FacePatternMiner::_addTransactionToDB(const cv::Mat1b &transaction, uchar b
 void FacePatternMiner::_preprocess() {
     // If I need to fill the databases
     if(_positiveDB->size() == 0 && _negativeDB->size() == 0) {
-        QDirIterator *it = new QDirIterator(_positiveTestSet);
-        size_t count = 0;
+        QDirIterator *it = new QDirIterator(_positiveTrainSet);
+        //size_t count = 0;
         while(it->hasNext()) {
             auto fileName = it->next();
             if(!_validMime(fileName)) {
@@ -116,16 +119,16 @@ void FacePatternMiner::_preprocess() {
             // Appending transaction (the image), to transaction database
 
             // Creating test set for positive pattern
-            // mined facial features are black, thus bin = 0
             _addTransactionToDB(res, 255,  _positiveDB);
 
             // Creating test set for negative pattern
-            // bin = 255
             _addTransactionToDB(res, 0, _negativeDB);
-            if(++count == 100) {
+
+            /*if(++count == 100) {
                 break;
                 delete it;
             }
+            */
         }
     }
 
@@ -165,11 +168,8 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport, std::vec
     }
 
     QTextStream in(&mfiFile);
-
     auto lineCount = 1;
-
     QSet<int> coordNumSet;
-
     while(!in.atEnd()) {
         QString line = in.readLine();
         QStringList coords = line.split(" ");
@@ -182,7 +182,6 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport, std::vec
         } else {
             break;
         }
-
         ++lineCount;
     }
 
@@ -202,18 +201,21 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport, std::vec
 void FacePatternMiner::start() {
     _preprocess();
     emit preprocessing_terminated();
-    float positiveMinSupport = 0.98, negativeMinSupport = 0.5;
+    float positiveMinSupport = 0.92, negativeMinSupport = 0.9;
     _positiveMFI = _mineMFI(_positiveDB, positiveMinSupport, _positiveMFICoordinates);
-    // minSupp for negative mfi is the highest value possible (1) because we need to speed up the computation
     _negativeMFI = _mineMFI(_negativeDB, negativeMinSupport, _negativeMFICoordinates);
+
+    //cv::resize(_positiveMFI,_positiveMFI,cv::Size(21,21));
+    //cv::resize(_negativeMFI,_negativeMFI,cv::Size(21,21));
     emit mining_terminated(_positiveMFI, _negativeMFI);
     _trainClassifiers();
-    emit training_terminated();
+    //emit training_terminated();
     // Test, pick a random image.
-    /*cv::Mat test = cv::imread("./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm");
+    //cv::Mat test = cv::imread("./datasets/mitcbcl/test/face/cmu_0000.pgm");
+    cv::Mat test = cv::imread("./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm");
     _faceClassifier->classify(test);
     cv::namedWindow("test");
-    cv::imshow("test", test); */
+    cv::imshow("test", test);
 }
 
 void FacePatternMiner::_trainClassifiers() {
@@ -222,7 +224,7 @@ void FacePatternMiner::_trainClassifiers() {
     _featureClassifier = new FeatureClassifier(_positiveMFICoordinates, _negativeMFICoordinates);
     _svmClassifier = new SVMClassifier();
 
-    QDirIterator *it = new QDirIterator(_positiveTestSet);
+    QDirIterator *it = new QDirIterator(_positiveTrainSet);
     uint32_t totfile = 0;
     while(it->hasNext()) {
         ++totfile;
@@ -230,101 +232,15 @@ void FacePatternMiner::_trainClassifiers() {
         if(!_validMime(fileName)) {
             continue;
         }
-        cv::Mat faceGeneric = cv::imread(fileName.toStdString());
-        cv::Mat1b faceGray;
-        if(faceGeneric.channels() > 1) {
-            cv::cvtColor(faceGeneric, faceGray, CV_BGR2GRAY);
-        } else {
-            faceGray = faceGeneric;
-        }
+        cv::Mat face = cv::imread(fileName.toStdString());
+        cv::Mat1b faceGray = Preprocessor::gray(face);
+
         _varianceClassifier->train(faceGray);
         _featureClassifier->train(faceGray);
         emit preprocessing(faceGray);
     }
     delete it;
-    std::cout << "[+] Variance classifier sucessully trained" << std::endl;
-
-    // TODO: train feature classifier
-    // TODO: create svm classifyer
+    std::cout << "[+] Classifiers sucessully trained" << std::endl;
 
     _faceClassifier = new FaceClassifier(_varianceClassifier,_featureClassifier,_svmClassifier, *_trainImageSize);
 }
-
-
-/*void FacePatternMiner::_buildClassifier() {
-
-    // TODO: threshold learning process
-    // Create a classifier.
-    // Put every positive image into the classifier and adjust threshold until every image
-    // is classified correctly
-    // Do the same for the negative ones
-    // The target is the have 100% true positive and 100% true negative
-    // that's hard due to the noise. Thus we have to tradeoff and accept some false positive
-    // and some false negative.
-
-    // TODO: variance classifier (really required?)
-
-    // (face) feature classifier:
-    FeatureClassifier fc(_positiveMFICoordinates, _negativeMFICoordinates);
-
-    // TODO: train with dataset of negative patterns(non face)
-    // scale according to the dimension of the lowest item to match
-    // void resize(InputArray src, OutputArray dst, Size dsize, double fx=0, double fy=0, int interpolation=INTER_LINEAR )
-
-    QDirIterator *positiveIt = new QDirIterator(_positiveTestSet);
-    QDirIterator *negativeIt = new QDirIterator(_negativeTestSet);
-    while(positiveIt->hasNext()) {
-        auto fileName = positiveIt->next();
-        if(!_validMime(fileName)) {
-            continue;
-        }
-
-        auto raw = cv::imread(fileName.toStdString());
-        auto edge = cv::imread(_edgeFileOf(fileName));
-
-        fc.setData(raw, edge);
-        float r1diff, r2diff;
-        int age = 1;
-        while(!fc.rule1(r1diff) || !fc.rule2(r2diff)) {
-            std::cout << "AGE "<< age << std::endl;
-            while(!fc.rule1(r1diff)) {
-                fc.setT1(fc.getT1()+1);
-                std::cout << "T1 = " << fc.getT1() << std::endl;
-            }
-            while(!fc.rule2(r2diff)) {
-                fc.setT2(fc.getT2()+1);
-                std::cout << "T2 = " << fc.getT2() << std::endl;
-            }
-        }
-        std::cout << "[P]Thresholds: " << fc.getT1() << " " << fc.getT2() << std::endl;
-        std::cout << "[P]Age: " << age << std::endl;
-    }
-
-    while(negativeIt->hasNext()) {
-        auto fileName = negativeIt->next();
-        if(!_validMime(fileName)) {
-            continue;
-        }
-
-        auto raw = cv::imread(fileName.toStdString());
-        auto edge = cv::imread(_edgeFileOf(fileName));
-
-        fc.setData(raw, edge);
-        float r1diff, r2diff;
-        int age = 1;
-        while(!fc.rule1(r1diff) || !fc.rule2(r2diff)) {
-            std::cout << "AGE "<< age << std::endl;
-            while(!fc.rule1(r1diff)) {
-                fc.setT1(fc.getT1()+1);
-                std::cout << "T1 = " << fc.getT1() << std::endl;
-            }
-            while(!fc.rule2(r2diff)) {
-                fc.setT2(fc.getT2()+1);
-                std::cout << "T2 = " << fc.getT2() << std::endl;
-            }
-        }
-        std::cout << "[N]Thresholds: " << fc.getT1() << " " << fc.getT2() << std::endl;
-        std::cout << "[N]Age: " << age << std::endl;
-    }
-}
-*/

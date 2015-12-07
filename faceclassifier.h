@@ -13,7 +13,7 @@ class FaceClassifier : public IClassifier
 {
 public:
     FaceClassifier(VarianceClassifier *vc, FeatureClassifier *fc, SVMClassifier *svmc, cv::Size size);
-    bool classify(cv::Mat1b &) override;
+    bool classify(cv::Mat &);
 
 private:
     VarianceClassifier *_vc;

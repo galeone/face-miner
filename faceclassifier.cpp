@@ -9,11 +9,10 @@ FaceClassifier::FaceClassifier(VarianceClassifier *vc, FeatureClassifier *fc, SV
 }
 
 //Returns true if contains some faces. Hilight with a rectangle the face on the image.
-bool FaceClassifier::classify(cv::Mat1b &image) {
+bool FaceClassifier::classify(cv::Mat &image) {
     //Downsample image until its dimension are less than _size (gaussian pyramid)
     //for every downsample, use a sliding window approach to extract _size window and classify it
     bool ret = false;
-    cv::string wat = "name";
 
     std::vector<cv::Mat> pyramid;
     cv::Mat level = cv::Mat(image); // level of the pyramid
@@ -24,27 +23,22 @@ bool FaceClassifier::classify(cv::Mat1b &image) {
         cv::resize(level,level,cv::Size(0,0), ratio - 1 , ratio - 1);
     }
 
-    for(cv::Mat level : pyramid) {
-        auto name = std::string(wat.append("asd")).c_str();
-        cv::namedWindow(name);
-        cv::imshow(name, level);
-    }
-
-    cv::Mat1b retImage = cv::Mat(image);
+    cv::Mat retImage = image.clone();
 
     size_t iteration = 0;
-    for(auto rit = pyramid.rbegin(); rit != pyramid.rend(); ++rit, ++iteration) {
-        cv::Mat1b level = rit[iteration];
+    // from the smallest to the highest
+    for(auto it = pyramid.begin(); it != pyramid.end(); ++it, ++iteration) {
+        cv::Mat level = *it;
         for(auto x = 0; x <= level.cols - _size.width; x+=_step) {
             bool detected = false;
             for(auto y = 0; y <= level.rows - _size.height; y+=_step) {
-                cv::Mat1b roi = Preprocessor::process(level(cv::Rect(x,y,_size.width, _size.height)));
+                //cv::Mat1b roi = Preprocessor::process(level(cv::Rect(x,y,_size.width, _size.height)));
+                cv::Mat1b roi = Preprocessor::gray(level(cv::Rect(x,y,_size.width, _size.height)));
                 //TODO: and other 2 classificators
-                //if(_vc->classify(roi)) {
-                if(_fc->classify(roi)) {
-                    auto scaleFactor = iteration == 0 ? 1 : std::ceil(ratio * iteration);
+                if(_fc->classify(roi) /*&& _vc->classify(roi)*/) {
+                    auto scaleFactor = std::ceil(ratio * pyramid.size() - iteration + 1);
                     auto rect = cv::Rect(x*scaleFactor, y*scaleFactor, _size.width *scaleFactor, _size.height * scaleFactor);
-                    cv::rectangle(retImage, rect ,cv::Scalar(0,0,255));
+                    cv::rectangle(retImage, rect ,cv::Scalar(0,255,255));
                     ret = true;
                     std::cout << iteration << " " << x << " " << y << std::endl;
                     y+=_size.height;
@@ -56,7 +50,6 @@ bool FaceClassifier::classify(cv::Mat1b &image) {
             }
         }
     }
-
 
     image = retImage;
 
