@@ -5,10 +5,10 @@ VarianceClassifier::VarianceClassifier(const cv::Mat &positiveMFI, const cv::Mat
     _negativeMFI = negativeMFI;
 
     auto cols = _positiveMFI.cols,
-         rows = _positiveMFI.rows;
+            rows = _positiveMFI.rows;
 
     auto aThirdRows = std::floor(rows/3),
-         aThirdCols = std::floor(cols/3);
+            aThirdCols = std::floor(cols/3);
 
     // Mouth region
     _E = cv::Rect(0, rows-aThirdRows, cols, aThirdRows);
@@ -116,35 +116,66 @@ bool VarianceClassifier::classify(cv::Mat1b &window) {
 
 // Adjust the thresholds untile the face is marked as a valid face
 // we suppose that face has the same dimension of _positiveMFI / _negativeMFI
-void VarianceClassifier::train(cv::Mat1b &face) {
-    cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
-    cv::meanStdDev(face(_D), mu_d, sigma_d);
-    cv::meanStdDev(face(_E), mu_e, sigma_e);
+void VarianceClassifier::train(bool positive, QString trainingSet) {
+    QDirIterator *it = new QDirIterator(trainingSet);
+    while(it->hasNext()) {
+        auto fileName = it->next();
+        if(!Preprocessor::validMime(fileName)) {
+            continue;
+        }
 
-   _oldT = _t;
-    while(sigma_d[0] > _t || sigma_e[0] > _t) {
-        _t += 1.27;
+        cv::Mat face = cv::imread(fileName.toStdString());
+        face = Preprocessor::gray(face);
+
+        if(positive) {
+            cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
+            cv::meanStdDev(face(_D), mu_d, sigma_d);
+            cv::meanStdDev(face(_E), mu_e, sigma_e);
+
+            _oldT = _t;
+            while(sigma_d[0] > _t || sigma_e[0] > _t) {
+                _t += 1.27;
+            }
+            _t = (_t + _oldT) / 2;
+
+            ++_trainingNumber;
+            std::cout << "[P] Item: " << _trainingNumber << "\nComputed threshold: " << _t << std::endl;
+
+            cv::Scalar helper = _getMForABC(face);
+            double ma = helper[0], mb = helper[1], mc = helper[2];
+
+            while((ma > 0 && mc > 0) && (mb < _k*ma || mb < _k*mc)) {
+                --_k;
+            }
+
+            std::cout << "[P] Computed k: " << _k << std::endl;
+        } else {
+            cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
+            cv::meanStdDev(face(_D), mu_d, sigma_d);
+            cv::meanStdDev(face(_E), mu_e, sigma_e);
+
+            _oldT = _t;
+            while(sigma_d[0] <= _t || sigma_e[0] <= _t) {
+                _t -= 1.27;
+            }
+            _t = (_t + _oldT) / 2;
+
+            ++_trainingNumber;
+            std::cout << "[N] Item: " << _trainingNumber << "\nComputed threshold: " << _t << std::endl;
+
+            cv::Scalar helper = _getMForABC(face);
+            double ma = helper[0], mb = helper[1], mc = helper[2];
+            std::cout << ma << " " << mb << " " << mc << std::endl;
+            while((ma > 0 && mc > 0) && (mb >= _k*ma || mb >= _k*mc)) {
+                ++_k;
+            }
+
+            std::cout << "[N] Computed k: " << _k << std::endl;
+        }
+
     }
-    _t = (_t + _oldT) / 2;
-
-    ++_trainingNumber;
-    std::cout << "Item: " << _trainingNumber << "\nComputed threshold: " << _t << std::endl;
-
-    cv::Scalar mu_a, mu_b, mu_c;
-    cv::Mat1b roi_a = face(_A), roi_b = face(_B), roi_c = face(_C);
-    mu_a = cv::mean(roi_a);
-    mu_b = cv::mean(roi_b);
-    mu_c = cv::mean(roi_c);
-
-    cv::Scalar helper = _getMForABC(face);
-    double ma = helper[0], mb = helper[1], mc = helper[2];
-
-    while(mb < _k*ma || mb < _k*mc) {
-        _k-=0.01;
-    }
-
-    std::cout << "Computed k: " << _k << std::endl;
-/*
+    delete it;
+    /*
     cv::rectangle(face,_A,cv::Scalar(255,0,0));
     cv::rectangle(face,_B,cv::Scalar(255,255,0));
     cv::rectangle(face,_C,cv::Scalar(255,0,255));

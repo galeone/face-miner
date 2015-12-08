@@ -59,11 +59,6 @@ FacePatternMiner::FacePatternMiner(QString train_positive, QString train_negativ
 #endif
 }
 
-inline bool FacePatternMiner::_validMime(QString fileName) {
-    QMimeDatabase mimeDB;
-    return  mimeDB.mimeTypeForFile(fileName).inherits(_mimeFilter);
-}
-
 // _appendToSet extracts the pixel position with value bin. It appends the extracted pattern to the database
 // file using the MAFIA database syntax
 void FacePatternMiner::_addTransactionToDB(const cv::Mat1b &transaction, uchar bin, QFile *database) {
@@ -95,7 +90,7 @@ void FacePatternMiner::_preprocess() {
         //size_t count = 0;
         while(it->hasNext()) {
             auto fileName = it->next();
-            if(!_validMime(fileName)) {
+            if(!Preprocessor::validMime(fileName)) {
                 continue;
             }
 
@@ -224,22 +219,11 @@ void FacePatternMiner::_trainClassifiers() {
     _featureClassifier = new FeatureClassifier(_positiveMFICoordinates, _negativeMFICoordinates);
     _svmClassifier = new SVMClassifier();
 
-    QDirIterator *it = new QDirIterator(_positiveTrainSet);
-    uint32_t totfile = 0;
-    while(it->hasNext()) {
-        ++totfile;
-        auto fileName = it->next();
-        if(!_validMime(fileName)) {
-            continue;
-        }
-        cv::Mat face = cv::imread(fileName.toStdString());
-        cv::Mat1b faceGray = Preprocessor::gray(face);
+    _varianceClassifier->train(true, _positiveTrainSet);
+    _varianceClassifier->train(false, _negativeTrainSet);
+    //_featureClassifier->train(true,_positiveTrainSet);
+    //_featureClassifier->train(false, _negativeTrainSet);
 
-        _varianceClassifier->train(faceGray);
-        _featureClassifier->train(faceGray);
-        emit preprocessing(faceGray);
-    }
-    delete it;
     std::cout << "[+] Classifiers sucessully trained" << std::endl;
 
     _faceClassifier = new FaceClassifier(_varianceClassifier,_featureClassifier,_svmClassifier, *_trainImageSize);

@@ -4,14 +4,16 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "iclassifier.h"
+#include "preprocessor.h"
 #include <iostream>
+#include <QString>
 
 class VarianceClassifier : public IClassifier
 {
 public:
     VarianceClassifier(const cv::Mat &, const cv::Mat &);
     bool classify(cv::Mat1b &);
-    void train(cv::Mat1b &face);
+    void train(bool positive, QString trainingSet);
     cv::Scalar _getMForABC(cv::Mat &window);
 
 private:

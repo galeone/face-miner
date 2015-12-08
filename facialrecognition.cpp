@@ -12,8 +12,9 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     qRegisterMetaType<cv::Mat>("cv::Mat");
 
     QSize streamSize(300,300);
-
+/*
     cv::VideoCapture _cam(0);
+
     if (!_cam.isOpened()) {
         QMessageBox error(this);
         error.critical(this, "Error", "Unable to open webcam");
@@ -40,7 +41,7 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
         // start thread: stream of frames
         frameStreamThread->start();
     }
-
+*/
     // set TraingStreamView to fixed size
     _getTrainingStreamView()->setSize(streamSize);
 

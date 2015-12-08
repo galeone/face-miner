@@ -29,17 +29,39 @@ void FeatureClassifier::setConstants(cv::Mat1b &raw, uint32_t *_c1, uint32_t *_c
     }
 }
 
-void FeatureClassifier::train(cv::Mat1b &raw) {
+void FeatureClassifier::train(bool positive, QString trainingSet) {
     uint32_t _c1, _c2, _c3, _c4;
-    setConstants(raw, &_c1, &_c2, &_c3, &_c4);
-    auto diff = _c1 - _c2;
-    while(diff <= _t1) {
-        --_t1;
+    QDirIterator *it = new QDirIterator(trainingSet);
+    while(it->hasNext()) {
+        auto fileName = it->next();
+        if(!Preprocessor::validMime(fileName)) {
+            continue;
+        }
+
+        cv::Mat1b raw = cv::imread(fileName.toStdString());
+        setConstants(raw, &_c1, &_c2, &_c3, &_c4);
+
+        if(positive) {
+            auto diff = _c1 - _c2;
+            while(diff <= _t1) {
+                --_t1;
+            }
+            diff = _c3 - _c4;
+            while(diff <= _t2) {
+                --_t2;
+            }
+        } else {
+            auto diff = _c1 - _c2;
+            while(diff > _t1) {
+                ++_t1;
+            }
+            diff = _c3 - _c4;
+            while(diff > _t2) {
+                ++_t2;
+            }
+        }
     }
-    diff = _c3 - _c4;
-    while(diff <= _t2) {
-        --_t2;
-    }
+    delete it;
 
     std::cout << "Thresholds: " << _t1 << " " << _t2 << std::endl;
 }

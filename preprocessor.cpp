@@ -72,3 +72,8 @@ cv::Mat1b Preprocessor::process(cv::Mat image) {
     cv::dilate(thresRes,dilatationRes,structuringElement);
     return dilatationRes;
 }
+
+bool Preprocessor::validMime(QString fileName, QString _mimeFilter) {
+    QMimeDatabase mimeDB;
+    return mimeDB.mimeTypeForFile(fileName).inherits(_mimeFilter);
+}
