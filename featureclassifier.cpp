@@ -4,10 +4,10 @@ FeatureClassifier::FeatureClassifier(std::vector<cv::Point> &positiveMFICoordina
                                      std::vector<cv::Point> &negativeMFICoordinates) {
     _positiveMFICoordinates = positiveMFICoordinates;
     _negativeMFICoordinates = negativeMFICoordinates;
-    _t1 = _t2 = -1;
+    _t1 = _t2 = 0;
 }
 
-void FeatureClassifier::setConstants(cv::Mat1b &raw, uint32_t *_c1, uint32_t *_c2, uint32_t *_c3, uint32_t *_c4) {
+void FeatureClassifier::setConstants(cv::Mat1b &raw, int32_t *_c1, int32_t *_c2, int32_t *_c3, int32_t *_c4) {
     cv::Mat1b edge = Preprocessor::edge(raw);
     *_c1 = *_c2 = *_c3 = *_c4 = 0;
     for(const cv::Point &point : _positiveMFICoordinates) {
@@ -29,9 +29,11 @@ void FeatureClassifier::setConstants(cv::Mat1b &raw, uint32_t *_c1, uint32_t *_c
     }
 }
 
-void FeatureClassifier::train(bool positive, QString trainingSet) {
-    uint32_t _c1, _c2, _c3, _c4;
-    QDirIterator *it = new QDirIterator(trainingSet);
+void FeatureClassifier::train(QString positiveTrainingSet, QString negativeTrainingSet) {
+    int32_t _c1, _c2, _c3, _c4;
+    std::vector<double> positiveT1, negativeT1, positiveT2, negativeT2;
+
+    QDirIterator *it = new QDirIterator(positiveTrainingSet);
     while(it->hasNext()) {
         auto fileName = it->next();
         if(!Preprocessor::validMime(fileName)) {
@@ -41,36 +43,35 @@ void FeatureClassifier::train(bool positive, QString trainingSet) {
         cv::Mat1b raw = cv::imread(fileName.toStdString());
         setConstants(raw, &_c1, &_c2, &_c3, &_c4);
 
-        if(positive) {
-            auto diff = _c1 - _c2;
-            while(diff <= _t1) {
-                --_t1;
-            }
-            diff = _c3 - _c4;
-            while(diff <= _t2) {
-                --_t2;
-            }
-        } else {
-            auto diff = _c1 - _c2;
-            while(diff > _t1) {
-                ++_t1;
-            }
-            diff = _c3 - _c4;
-            while(diff > _t2) {
-                ++_t2;
-            }
-        }
+        positiveT1.push_back(_c1 - _c2);
+        positiveT2.push_back(_c3 - _c4);
     }
+
+    it = new QDirIterator(negativeTrainingSet);
+
+    while(it->hasNext()) {
+        auto fileName = it->next();
+        if(!Preprocessor::validMime(fileName)) {
+            continue;
+        }
+
+        cv::Mat1b raw = cv::imread(fileName.toStdString());
+        setConstants(raw, &_c1, &_c2, &_c3, &_c4);
+
+        negativeT1.push_back(_c1 - _c2);
+        negativeT2.push_back(_c3 - _c4);
+    }
+
     delete it;
+
+    _t1 = equal_error_rate(positiveT1, negativeT1).second;
+    _t2 = equal_error_rate(positiveT2, negativeT2).second;
 
     std::cout << "Thresholds: " << _t1 << " " << _t2 << std::endl;
 }
 
 bool FeatureClassifier::classify(cv::Mat1b &window) {
-    uint32_t _c1, _c2, _c3, _c4;
+    int32_t _c1, _c2, _c3, _c4;
     setConstants(window, &_c1, &_c2, &_c3, &_c4);
     return _c1 - _c2 > _t1 && _c1 - _c2 > _t2;
 }
-
-
-

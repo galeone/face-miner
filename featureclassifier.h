@@ -12,12 +12,12 @@
 class FeatureClassifier : IClassifier {
 public:
     FeatureClassifier(std::vector<cv::Point> &, std::vector<cv::Point> &);
-    void train(bool positive, QString trainingSet);
-    void setConstants(cv::Mat1b &raw, uint32_t *_c1, uint32_t *_c2, uint32_t *_c3, uint32_t *_c4);
+    void train(QString positiveTrainingSet, QString negativeTrainingSet);
+    void setConstants(cv::Mat1b &raw, int32_t *_c1, int32_t *_c2, int32_t *_c3, int32_t *_c4);
     bool classify(cv::Mat1b &window);
 
 private:
-    uint32_t _t1, _t2;
+    int32_t _t1, _t2;
     std::vector<cv::Point> _positiveMFICoordinates, _negativeMFICoordinates;
 };
 

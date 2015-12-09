@@ -8,6 +8,7 @@
 #include "preprocessor.h"
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/objdetect.hpp>
 
 class FaceClassifier : public IClassifier
 {
@@ -16,6 +17,7 @@ public:
     bool classify(cv::Mat &);
 
 private:
+    cv::Rect _expand(cv::Rect rect, float scaleFactor);
     VarianceClassifier *_vc;
     FeatureClassifier *_fc;
     SVMClassifier *_sc;

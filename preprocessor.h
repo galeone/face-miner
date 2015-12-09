@@ -11,9 +11,11 @@
 class Preprocessor
 {
 public:
-    static cv::Mat1b process(cv::Mat image);
-    static cv::Mat1b edge(cv::Mat image);
-    static cv::Mat1b gray(cv::Mat image);
+    static cv::Mat1b process(cv::Mat &image);
+    static cv::Mat1b edge(cv::Mat &image);
+    static cv::Mat1b gray(cv::Mat &image);
+    static cv::Mat1b equalize(cv::Mat1b &gray);
+    static cv::Mat1b threshold(cv::Mat1b &grad);
     static bool validMime(QString fileName, QString _mimeFilter = "image/x-portable-graymap");
 };
 

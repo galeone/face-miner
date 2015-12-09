@@ -11,15 +11,13 @@
 class VarianceClassifier : public IClassifier
 {
 public:
-    VarianceClassifier(const cv::Mat &, const cv::Mat &);
+    VarianceClassifier(const cv::Size windowSize);
     bool classify(cv::Mat1b &);
-    void train(bool positive, QString trainingSet);
+    void train(QString positiveTrainingSet, QString negativeTrainingSet);
     cv::Scalar _getMForABC(cv::Mat &window);
 
 private:
-    cv::Mat _positiveMFI, _negativeMFI;
-    float _t, _k, _oldT;
-    uint32_t _trainingNumber;
+    double _t, _k;
     cv::Rect _A, _B, _C, _D, _E;
 };
 

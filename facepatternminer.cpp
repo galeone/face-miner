@@ -200,29 +200,29 @@ void FacePatternMiner::start() {
     _positiveMFI = _mineMFI(_positiveDB, positiveMinSupport, _positiveMFICoordinates);
     _negativeMFI = _mineMFI(_negativeDB, negativeMinSupport, _negativeMFICoordinates);
 
-    //cv::resize(_positiveMFI,_positiveMFI,cv::Size(21,21));
-    //cv::resize(_negativeMFI,_negativeMFI,cv::Size(21,21));
     emit mining_terminated(_positiveMFI, _negativeMFI);
     _trainClassifiers();
-    //emit training_terminated();
+
     // Test, pick a random image.
     //cv::Mat test = cv::imread("./datasets/mitcbcl/test/face/cmu_0000.pgm");
-    cv::Mat test = cv::imread("./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm");
+    cv::Mat test = cv::imread("./datasets/test.jpg");
     _faceClassifier->classify(test);
-    cv::namedWindow("test");
-    cv::imshow("test", test);
+    cv::namedWindow("test1");
+    cv::imshow("test1", test);
+    cv::Mat test2 = cv::imread("./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm");
+    _faceClassifier->classify(test2);
+    cv::namedWindow("test2");
+    cv::imshow("test2", test2);
 }
 
 void FacePatternMiner::_trainClassifiers() {
-    // Classifiers
-    _varianceClassifier = new VarianceClassifier(_positiveMFI, _negativeMFI);
+    // Classifiers1
+    _varianceClassifier = new VarianceClassifier(*_trainImageSize);
     _featureClassifier = new FeatureClassifier(_positiveMFICoordinates, _negativeMFICoordinates);
     _svmClassifier = new SVMClassifier();
 
-    _varianceClassifier->train(true, _positiveTrainSet);
-    _varianceClassifier->train(false, _negativeTrainSet);
-    //_featureClassifier->train(true,_positiveTrainSet);
-    //_featureClassifier->train(false, _negativeTrainSet);
+    _varianceClassifier->train(_positiveTrainSet, _negativeTrainSet);
+    _featureClassifier->train(_positiveTrainSet, _negativeTrainSet);
 
     std::cout << "[+] Classifiers sucessully trained" << std::endl;
 
