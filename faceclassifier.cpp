@@ -4,7 +4,7 @@ FaceClassifier::FaceClassifier(VarianceClassifier *vc, FeatureClassifier *fc, SV
     _vc = vc;
     _fc = fc;
     _sc = svmc;
-    _size = size;
+    _windowSize = size;
     _step = 2;
 }
 
@@ -18,87 +18,55 @@ cv::Rect FaceClassifier::_expand(cv::Rect rect, float scaleFactor) {
 
 //Returns true if contains some faces. Hilight with a rectangle the face on the image.
 bool FaceClassifier::classify(cv::Mat &image) {
-    //Downsample image until its dimension are less than _size (gaussian pyramid)
-    //for every downsample, use a sliding window approach to extract _size window and classify it
-    cv::Mat1b gray_img = Preprocessor::gray(image);
-    cv::Mat1b level(gray_img); // level of the pyramid
-    float scaleFactor = 1.25;
-    auto maxlevel = 0;
-    std::vector<cv::Mat1b> refs, results;
-    std::vector<cv::Size> sizes;
-    std::vector<cv::Rect> faces_rect;
-    refs.push_back(gray_img);
-    sizes.push_back(gray_img.size());
-    while(level.rows/scaleFactor >= _size.height && level.cols/scaleFactor >= _size.width) {
-        ++maxlevel;
-        level.rows /= scaleFactor;
-        level.cols /= scaleFactor;
-        cv::Mat1b lvl;
-        auto size = cv::Size(level.cols, level.rows);
-        cv::resize(gray_img,lvl,size);
-        refs.push_back(lvl);
-        sizes.push_back(size);
-        std::cout << level.rows << " " << level.cols << std::endl;
-    }
 
-    sizes.pop_back();
+    cv::vector<cv::Rect> allCandidates;
+    float scaleFactor = 1.2;
+    size_t iter_count = 0;
+    cv::Mat1b gray = Preprocessor::gray(image);
+    for(float factor = 1; ; factor *=scaleFactor) {
+        ++iter_count;
+        // Size of the image scaled up
+        cv::Size winSize(std::round(_windowSize.width*factor), std::round(_windowSize.height*factor));
 
-    std::cout << "levels: "<< maxlevel << std::endl;
-    std::string name = "l3l";
+        // Size of the image scaled down (from bigger to smaller)
+        cv::Size sz(image.cols/factor, image.rows/factor);
 
-    cv::Mat ref;
-    bool found = false;
+        // Difference between sized of the scaled image and the original detection window
+        cv::Size sz1(sz.width - _windowSize.width, sz.height - _windowSize.height);
 
-    // Process each level
-    for (int level = maxlevel; level >= 0; level--) {
-        ref = refs[level];
-
-        if (level == maxlevel) {
-            // sliding window
-            for(auto x=0; x<=ref.cols - _size.width; x+=_step) {
-                for(auto y=0; y<=ref.rows - _size.height; y+=_step) {
-                    cv::Rect roi_rect(x, y, _size.width, _size.height);
-                    cv::Mat1b roi(ref(roi_rect));
-                    roi = Preprocessor::equalize(roi);
-                    //roi = Preprocessor::edge(roi);
-                    //roi = Preprocessor::threshold(roi);
-
-                    // Propagare?
-                    //if(_vc->classify(roi)) {
-                    if(_vc->classify(roi) && _fc->classify(roi)) {
-                        cv::Rect destPos = _expand(roi_rect,level/scaleFactor);
-                        faces_rect.push_back(destPos);
-                        found = true;
-                        std::cout << "found " << level << std::endl;
-                    }
-                }
-            }
-
-        } else {
-            for(auto x=0; x<=ref.cols - _size.width; x+=_step) {
-                for(auto y=0; y<=ref.rows - _size.height; y+=_step) {
-                    cv::Rect roi_rect(x, y, _size.width, _size.height);
-                    cv::Mat1b roi = ref(roi_rect);
-                    roi = Preprocessor::equalize(roi);
-                    //roi = Preprocessor::edge(roi);
-                    //roi = Preprocessor::threshold(roi);
-                    if(_vc->classify(roi) && _fc->classify(roi)) {
-                    //if(_vc->classify(roi)) {
-                        cv::Rect destPos = _expand(roi_rect,level/scaleFactor);
-                        faces_rect.push_back(destPos);
-                        found = true;
-                        std::cout << "found " << level << std::endl;
-                    }
-                }
-            }
+        // if the actual scaled image is smaller than the origina detection window, break
+        if(sz1.width < 0 || sz1.height < 0) {
+            break;
         }
+
+        cv::Mat1b level;
+        cv::resize(gray,level,sz,0,0,cv::INTER_NEAREST);
+
+        _slidingSearch(level, factor, allCandidates);
+
     }
 
-    cv::groupRectangles(faces_rect, 2, 0.25);
+    cv::groupRectangles(allCandidates, 1, 0.4);
 
-    for(const cv::Rect &rect : faces_rect) {
+    for(const cv::Rect &rect : allCandidates) {
         cv::rectangle(image,rect, cv::Scalar(255,255,0));
     }
 
-    return found;
+    return allCandidates.size() > 0;
+}
+
+void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<cv::Rect> &allCandidates) {
+    cv::Size winSize(_windowSize.width*factor, _windowSize.height*factor);
+    for(auto x=0; x<=level.cols - _windowSize.width; x+=_step) {
+        for(auto y=0; y<=level.rows - _windowSize.height; y+=_step) {
+            cv::Rect roi_rect(x, y, _windowSize.width, _windowSize.height);
+            cv::Mat1b roi = level(roi_rect);
+            if(_vc->classify(roi) && _fc->classify(roi)) {
+            //if(_vc->classify(roi)) {
+            //if(_fc->classify(roi)) {
+                cv::Rect destPos(std::round(x*factor), std::round(y*factor), winSize.width, winSize.height);
+                allCandidates.push_back(destPos);
+            }
+        }
+    }
 }

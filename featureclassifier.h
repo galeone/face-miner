@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <QString>
 #include <QDirIterator>
+#include <opencv2/ml.hpp>
 
 class FeatureClassifier : IClassifier {
 public:
@@ -17,7 +18,7 @@ public:
     bool classify(cv::Mat1b &window);
 
 private:
-    int32_t _t1, _t2;
+    cv::Boost *_t1, *_t2;
     std::vector<cv::Point> _positiveMFICoordinates, _negativeMFICoordinates;
 };
 

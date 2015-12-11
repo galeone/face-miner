@@ -106,9 +106,7 @@ void FacePatternMiner::_preprocess() {
             }
 
             emit preprocessing(image);
-            std::cout << "before size: " << image.rows <<  " " << image.cols << std::endl;
             cv::Mat1b res = Preprocessor::process(image);
-            std::cout << "after size: " << res.rows <<  " " << res.cols << std::endl;
             emit preprocessed(res);
 
             // Appending transaction (the image), to transaction database
@@ -118,12 +116,6 @@ void FacePatternMiner::_preprocess() {
 
             // Creating test set for negative pattern
             _addTransactionToDB(res, 0, _negativeDB);
-
-            /*if(++count == 100) {
-                break;
-                delete it;
-            }
-            */
         }
     }
 
@@ -213,13 +205,18 @@ void FacePatternMiner::start() {
     _faceClassifier->classify(test2);
     cv::namedWindow("test2");
     cv::imshow("test2", test2);
+
+    cv::Mat test3 = cv::imread("./datasets/test2.jpg");
+    _faceClassifier->classify(test3);
+    cv::namedWindow("test3");
+    cv::imshow("test3", test3);
 }
 
 void FacePatternMiner::_trainClassifiers() {
     // Classifiers1
     _varianceClassifier = new VarianceClassifier(*_trainImageSize);
     _featureClassifier = new FeatureClassifier(_positiveMFICoordinates, _negativeMFICoordinates);
-    _svmClassifier = new SVMClassifier();
+    _svmClassifier = new SVMClassifier(cv::Range(5,8), cv::Range(11, 14));
 
     _varianceClassifier->train(_positiveTrainSet, _negativeTrainSet);
     _featureClassifier->train(_positiveTrainSet, _negativeTrainSet);

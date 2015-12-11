@@ -4,32 +4,35 @@ VarianceClassifier::VarianceClassifier(const cv::Size windowSize) {
     auto cols = windowSize.width,
             rows = windowSize.height;
 
-    auto aThirdRows = std::floor(rows/3),
-            aThirdCols = std::floor(cols/3);
+    auto aThirdRows = std::floor(rows/3), //6
+            aThirdCols = std::floor(cols/3); //6
 
     // Mouth region
     _E = cv::Rect(0, rows-aThirdRows, cols, aThirdRows);
 
     // Nose region
-    _D = cv::Rect(0, rows-2*aThirdRows, cols, aThirdRows);
+    _D = cv::Rect(0, rows-2*aThirdRows + 1, cols, aThirdRows-1);
 
     // Left eye region
-    auto ac_cols = aThirdCols + 2;
+    auto ac_cols = aThirdCols + 1;
     auto b_cols = cols - 2*ac_cols;
 
     // Top section
     if(rows % 2 != 0) {
         ++aThirdRows;
     }
-    _A = cv::Rect(0, 0, ac_cols, aThirdRows);
+    int topHeight = std::floor(aThirdRows/3);
+    _A = cv::Rect(0, 2*topHeight, ac_cols, topHeight);
 
     // Between eye region
-    _B = cv::Rect(ac_cols, 0, b_cols, aThirdRows);
+    _B = cv::Rect(ac_cols, 2*topHeight, b_cols, topHeight);
 
     // Right eye region
-    _C = cv::Rect(cols - ac_cols, 0, ac_cols, aThirdRows);
+    _C = cv::Rect(cols - ac_cols, 2*topHeight, ac_cols, topHeight);
 
-    _t = _k = 0;
+    _t = new cv::Boost();
+    _b = new cv::NormalBayesClassifier();
+    _k = 0;
 }
 
 cv::Scalar VarianceClassifier::_getMForABC(cv::Mat &window) {
@@ -44,7 +47,7 @@ cv::Scalar VarianceClassifier::_getMForABC(cv::Mat &window) {
     uint32_t validPx = 0;
 
     //ma is the average intensity of those pixels that are
-    // darker than the averate intensity in region A
+    // darker than the average intensity in region A
     cv::Point coord;
     for(auto x=0;x<roi_a.cols; ++x) {
         for(auto y=0;y<roi_a.rows;++y) {
@@ -57,26 +60,11 @@ cv::Scalar VarianceClassifier::_getMForABC(cv::Mat &window) {
         }
     }
 
-    ma /= validPx > 0 ? validPx : 1;
-    validPx = 0;
-
-    //mb is the average intensity of those pixels that are
-    // birghter than the averate intensity in region B
-    for(auto x=0;x<roi_b.cols; ++x) {
-        for(auto y=0;y<roi_b.rows;++y) {
-            coord.x = x; coord.y = y;
-            auto pxBrightness = roi_b.at<uchar>(coord);
-            if(pxBrightness > mu_b[0]) {
-                mb += pxBrightness;
-                ++validPx;
-            }
-        }
-    }
-    mb /= validPx > 0 ? validPx : 1;
+    ma /= (validPx > 0 ? validPx : 1);
     validPx = 0;
 
     //mc is the average intensity of those pixels that are
-    // darker than the averate intensity in region C
+    // darker than the average intensity in region C
     for(auto x=0;x<roi_c.cols; ++x) {
         for(auto y=0;y<roi_c.rows;++y) {
             coord.x = x; coord.y = y;
@@ -87,7 +75,24 @@ cv::Scalar VarianceClassifier::_getMForABC(cv::Mat &window) {
             }
         }
     }
-    mc /= validPx > 0 ? validPx : 1;
+
+    mb /= (validPx > 0 ? validPx : 1);
+    validPx = 0;
+
+    //mb is the average intensity of those pixels that are
+    // birghter than the average intensity in region B
+    for(auto x=0;x<roi_b.cols; ++x) {
+        for(auto y=0;y<roi_b.rows;++y) {
+            coord.x = x; coord.y = y;
+            auto pxBrightness = roi_b.at<uchar>(coord);
+            if(pxBrightness > mu_b[0]) {
+                mb += pxBrightness;
+                ++validPx;
+            }
+        }
+    }
+
+    mc /= (validPx > 0 ? validPx : 1);
     return cv::Scalar(ma,mb,mc);
 }
 
@@ -96,26 +101,59 @@ bool VarianceClassifier::classify(cv::Mat1b &window) {
     cv::meanStdDev(window(_D), mu_d, sigma_d);
     cv::meanStdDev(window(_E), mu_e, sigma_e);
 
+    //calculate sample threshold
+    float t = std::max(sigma_d[0], sigma_e[0]);
+
+    cv::Mat1f sample = (cv::Mat1f(1,1) << t);
+    auto predictedLabel = _t->predict(sample);
+    //prediction = _b->predict(sample);
+
+    if(predictedLabel < 0 ) { // non face threshold
+        return false;
+    } else {
+        return true; // TODO: capire come fare a trovare k in maniera decente
+    }
+
     cv::Scalar helper = _getMForABC(window);
     double ma = helper[0], mb = helper[1], mc = helper[2];
-
-    if(sigma_d[0] < _t && sigma_e[0] < _t)
-        return false;
-
     if(mb < _k*ma || mb < _k*mc) {
         return false;
     }
 
     return true;
+
 }
 
 // Adjust the thresholds untile the face is marked as a valid face
 // we suppose that face has the same dimension of _positiveMFI / _negativeMFI
 void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrainingSet) {
-
-    std::vector<double> positiveT, negativeT, positiveK, negativeK;
-
     QDirIterator *it = new QDirIterator(positiveTrainingSet);
+    auto positiveCount = 0;
+    while(it->hasNext()) {
+        auto fileName = it->next();
+        if(!Preprocessor::validMime(fileName)) {
+            continue;
+        }
+        ++positiveCount;
+    }
+
+    auto negativeCount = 0;
+    it = new QDirIterator(negativeTrainingSet);
+    while(it->hasNext()) {
+        auto fileName = it->next();
+        if(!Preprocessor::validMime(fileName)) {
+            continue;
+        }
+        ++negativeCount;
+    }
+
+    cv::Mat1f labels(positiveCount + negativeCount,1,CV_32FC1),
+            samples(positiveCount + negativeCount,1, CV_32FC1);
+
+    auto counter = 0;
+    float positiveK  = 1, negativeK  = 1;
+
+    it = new QDirIterator(positiveTrainingSet);
     while(it->hasNext()) {
         auto fileName = it->next();
         if(!Preprocessor::validMime(fileName)) {
@@ -123,22 +161,27 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
         }
 
         cv::Mat face = cv::imread(fileName.toStdString());
-        Preprocessor::gray(face);
+        face = Preprocessor::gray(face);
 
         cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
         cv::meanStdDev(face(_D), mu_d, sigma_d);
         cv::meanStdDev(face(_E), mu_e, sigma_e);
 
-        positiveT.push_back(sigma_d[0]);
-        positiveT.push_back(sigma_e[0]);
+        double t = std::max(sigma_d[0], sigma_e[0]);
+
+        labels.at<float>(counter, 0) = 1;
+        samples.at<float>(counter, 0) = t;
+        ++counter;
 
         cv::Scalar helper = _getMForABC(face);
         double ma = helper[0], mb = helper[1], mc = helper[2];
-
-        positiveK.push_back(mb/ma);
-        positiveK.push_back(mb/mc);
-
+        while((ma > 0 && mc > 0) && (mb < positiveK*ma || mb < positiveK*mc)) {
+            --positiveK;
+        }
     }
+    std::cout << "Positive K " << positiveK << std::endl;
+
+    negativeK = -1;
 
     it = new QDirIterator(negativeTrainingSet);
     while(it->hasNext()) {
@@ -148,28 +191,48 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
         }
 
         cv::Mat face = cv::imread(fileName.toStdString());
-        Preprocessor::gray(face);
+        face = Preprocessor::gray(face);
 
         cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
         cv::meanStdDev(face(_D), mu_d, sigma_d);
         cv::meanStdDev(face(_E), mu_e, sigma_e);
 
-        negativeT.push_back(sigma_d[0]);
-        negativeT.push_back(sigma_e[0]);
+        double t = std::max(sigma_d[0], sigma_e[0]);
+
+        labels.at<float>(counter, 0) = -1;
+        samples.at<float>(counter, 0) = t;
+        ++counter;
 
         cv::Scalar helper = _getMForABC(face);
         double ma = helper[0], mb = helper[1], mc = helper[2];
-
-        negativeK.push_back(mb/ma);
-        negativeK.push_back(mb/mc);
+        while((ma > 0 && mc > 0) && (mb >= negativeK*ma || mb >= negativeK*mc)) {
+            ++negativeK;
+        }
     }
+
+    std::cout << "Negative K: " << negativeK << std::endl;
+    _k = (positiveK + negativeK)/2;
+
     delete it;
 
-    _t = equal_error_rate(positiveT,negativeT).second;
-    std::cout << "Computed threshold: " << _t << std::endl;
+    cv::Mat vartype(samples.cols+1,1,CV_8U);
+    vartype.setTo(cv::Scalar(CV_VAR_NUMERICAL));
+    vartype.at<uchar>(samples.cols,0) = CV_VAR_CATEGORICAL;
 
-    _k = equal_error_rate(positiveK,negativeK).second;
-    std::cout << "Computed k: "<< _k << std::endl;
+    float priors[] = { 1.0f, 1.0f };
+
+    _t->train(samples, CV_ROW_SAMPLE, labels, cv::Mat(), cv::Mat(), vartype, cv::Mat(), cv::BoostParams(
+                  cv::Boost::REAL,
+                  100,
+                  0.0,
+                  1,
+                  false,
+                  priors));
+
+    _b->train(samples,labels);
+
+    // TODO: save threshold classifers.
+
     /*
     cv::rectangle(face,_A,cv::Scalar(255,0,0));
     cv::rectangle(face,_B,cv::Scalar(255,255,0));

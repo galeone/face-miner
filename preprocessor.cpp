@@ -1,6 +1,6 @@
 #include "preprocessor.h"
 
-cv::Mat1b Preprocessor::gray(cv::Mat &image) {
+cv::Mat1b Preprocessor::gray(const cv::Mat &image) {
     cv::Mat1b gray;
     if(image.channels() > 1) {
         cv::cvtColor(image, gray, CV_BGR2GRAY);
@@ -10,13 +10,13 @@ cv::Mat1b Preprocessor::gray(cv::Mat &image) {
     return gray;
 }
 
-cv::Mat1b Preprocessor::equalize(cv::Mat1b &gray) {
+cv::Mat1b Preprocessor::equalize(const cv::Mat1b &gray) {
     cv::Mat1b equalizedImage;
     cv::equalizeHist(gray, equalizedImage);
     return equalizedImage;
 }
 
-cv::Mat1b Preprocessor::threshold(cv::Mat1b &grad) {
+cv::Mat1b Preprocessor::threshold(const cv::Mat1b &grad) {
     cv::Scalar mu, sigma;
     cv::meanStdDev(grad, mu, sigma);
     const double c = 1.15;
@@ -27,7 +27,7 @@ cv::Mat1b Preprocessor::threshold(cv::Mat1b &grad) {
     return thresRes;
 }
 
-cv::Mat1b Preprocessor::edge(cv::Mat &image) {
+cv::Mat1b Preprocessor::edge(const cv::Mat &image) {
     // now we can use the sobel operator to extract the edges of the equalized image
     // sobel operator calculate an approximation of the partial derivates, in order to find out
     // the light changing in an pixel neighborhood
@@ -52,7 +52,7 @@ cv::Mat1b Preprocessor::edge(cv::Mat &image) {
     return grad_abs;
 }
 
-cv::Mat1b Preprocessor::process(cv::Mat &image) {
+cv::Mat1b Preprocessor::process(const cv::Mat &image) {
     // lets use the histogram equalization method in order to
     // equalize the distribution of greys in the original image
     // Thus we stretch the historgram trying to make it plan
