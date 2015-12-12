@@ -7,6 +7,10 @@ SVMClassifier::SVMClassifier(const cv::Range &rows1, const cv::Range rows2)
     _svm = new cv::SVM();
 }
 
+void SVMClassifier::_getIntegralImage() {
+
+}
+
 void SVMClassifier::_getHaarCoefficients(cv::Mat1b &window, cv::Mat1f &coeff) {
     // filter2d with haar kernel
     // extract coeff
@@ -14,21 +18,21 @@ void SVMClassifier::_getHaarCoefficients(cv::Mat1b &window, cv::Mat1f &coeff) {
     //coeff =  (cv::Mat1f(1,1) << t);
 }
 
-bool SVMClassifier::classify(cv::Mat1b &window) {
+bool SVMClassifier::classify(cv::Mat1b &window) { /*
     cv::Mat1f coeff;
     _getHaarCoefficients(window, &coeff);
 
     auto predictedLabel = _svm->predict(coeff);
-    //prediction = _b->predict(sample);
 
     if(predictedLabel < 0 ) { // non face threshold
         return false;
-    } else {
-        return true; // TODO: capire come fare a trovare k in maniera decente
     }
+    return true;
+    */
 }
 
 void SVMClassifier::train(QString positiveTrainingSet, QString negativeTrainingSet) {
+    /*
     QDirIterator *it = new QDirIterator(positiveTrainingSet);
     auto positiveCount = 0;
     while(it->hasNext()) {
@@ -108,14 +112,5 @@ void SVMClassifier::train(QString positiveTrainingSet, QString negativeTrainingS
                   1,
                   false,
                   priors));
-
-    // TODO: save threshold classifers.
-
-    /*
-    cv::rectangle(face,_A,cv::Scalar(255,0,0));
-    cv::rectangle(face,_B,cv::Scalar(255,255,0));
-    cv::rectangle(face,_C,cv::Scalar(255,0,255));
-    cv::rectangle(face,_D,cv::Scalar(0,0,0));
-    cv::rectangle(face,_E,cv::Scalar(0,255,255));
-*/
+                  */
 }

@@ -197,10 +197,12 @@ void FacePatternMiner::start() {
 
     // Test, pick a random image.
     //cv::Mat test = cv::imread("./datasets/mitcbcl/test/face/cmu_0000.pgm");
+    /*
     cv::Mat test = cv::imread("./datasets/test.jpg");
     _faceClassifier->classify(test);
     cv::namedWindow("test1");
     cv::imshow("test1", test);
+    */
     cv::Mat test2 = cv::imread("./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm");
     _faceClassifier->classify(test2);
     cv::namedWindow("test2");
@@ -210,6 +212,12 @@ void FacePatternMiner::start() {
     _faceClassifier->classify(test3);
     cv::namedWindow("test3");
     cv::imshow("test3", test3);
+
+    cv::Mat test4 = cv::imread("./datasets/24.jpg");
+    _faceClassifier->classify(test4);
+    cv::namedWindow("test4");
+    cv::imshow("test4", test4);
+
 }
 
 void FacePatternMiner::_trainClassifiers() {

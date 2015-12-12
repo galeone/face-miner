@@ -18,11 +18,14 @@ cv::Rect FaceClassifier::_expand(cv::Rect rect, float scaleFactor) {
 
 //Returns true if contains some faces. Hilight with a rectangle the face on the image.
 bool FaceClassifier::classify(cv::Mat &image) {
-
     cv::vector<cv::Rect> allCandidates;
     float scaleFactor = 1.2;
     size_t iter_count = 0;
     cv::Mat1b gray = Preprocessor::gray(image);
+    // pyramid downsampling
+    // from smaller to bigger.
+    // avoid to search where a face in a lower scale is found < image, scale factor >
+    std::vector<std::pair<cv::Mat1b, float>> pyramid;
     for(float factor = 1; ; factor *=scaleFactor) {
         ++iter_count;
         // Size of the image scaled up
@@ -40,13 +43,20 @@ bool FaceClassifier::classify(cv::Mat &image) {
         }
 
         cv::Mat1b level;
+
         cv::resize(gray,level,sz,0,0,cv::INTER_NEAREST);
-
-        _slidingSearch(level, factor, allCandidates);
-
+        pyramid.push_back(std::pair<cv::Mat1b, float>(level, factor));
     }
 
-    cv::groupRectangles(allCandidates, 1, 0.4);
+    // from smaller to bigger
+    for(auto rit = pyramid.rbegin(); rit != pyramid.rend(); rit++) {
+        cv::Mat1b level = (*rit).first;
+        float factor = (*rit).second;
+        std::cout << "Searching on: " << level.size() << ": " << factor << std::endl;
+        _slidingSearch(level,factor,allCandidates);
+    }
+
+    //cv::groupRectangles(allCandidates, 1, 0.2);
 
     for(const cv::Rect &rect : allCandidates) {
         cv::rectangle(image,rect, cv::Scalar(255,255,0));
@@ -55,17 +65,47 @@ bool FaceClassifier::classify(cv::Mat &image) {
     return allCandidates.size() > 0;
 }
 
+// allCandidates contains the previous positions, scaled to the original dimension of image of the found face
+// thus we can exploit this thing to skip a big section of the level = the intersection of the candidates
+// scaled by factor (thus is compatible with level) with level
 void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<cv::Rect> &allCandidates) {
     cv::Size winSize(_windowSize.width*factor, _windowSize.height*factor);
+    std::vector<cv::Rect> toSkip;
+
+    for(const cv::Rect &r : allCandidates) {
+        toSkip.push_back(cv::Rect(r.x/factor, r.y/factor, r.width/factor, r.height/factor));
+    }
+
+    std::string name("ASD");
     for(auto x=0; x<=level.cols - _windowSize.width; x+=_step) {
         for(auto y=0; y<=level.rows - _windowSize.height; y+=_step) {
             cv::Rect roi_rect(x, y, _windowSize.width, _windowSize.height);
+
+            // if roi_rect intersect a toSkip element, lets continue
+            auto exists = std::find_if(toSkip.begin(), toSkip.end(), [&](const cv::Rect &skip) {
+                /* A window overlaps the other window if the distance between
+                 * the centers of both windows is less than one fifth of the window size. */
+                //return (skip & roi_rect).width > _windowSize.width/5;
+                return (skip & roi_rect).area() > 0 ;
+            });
+
+            if(exists != toSkip.end()) { // intersection exists, we can skip
+                y+=_windowSize.height;
+                continue;
+            }
+
             cv::Mat1b roi = level(roi_rect);
+            // only equalize, each level is just gray
+            roi = Preprocessor::equalize(roi);
+
             if(_vc->classify(roi) && _fc->classify(roi)) {
-            //if(_vc->classify(roi)) {
-            //if(_fc->classify(roi)) {
+                std::cout << "dentro" << std::endl;
+                //cv::namedWindow(name.append("lol"));
+                //cv::imshow(name,roi);
                 cv::Rect destPos(std::round(x*factor), std::round(y*factor), winSize.width, winSize.height);
                 allCandidates.push_back(destPos);
+                // if found, we can skip next along y
+                y+=_windowSize.height;
             }
         }
     }

@@ -16,7 +16,7 @@ public:
     VarianceClassifier(const cv::Size windowSize);
     bool classify(cv::Mat1b &);
     void train(QString positiveTrainingSet, QString negativeTrainingSet);
-    cv::Scalar _getMForABC(cv::Mat &window);
+    cv::Scalar _getMForABC(cv::Mat1b &window);
 
 private:
     cv::Rect _A, _B, _C, _D, _E;

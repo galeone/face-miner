@@ -35,7 +35,7 @@ VarianceClassifier::VarianceClassifier(const cv::Size windowSize) {
     _k = 0;
 }
 
-cv::Scalar VarianceClassifier::_getMForABC(cv::Mat &window) {
+cv::Scalar VarianceClassifier::_getMForABC(cv::Mat1b &window) {
     cv::Scalar mu_a, mu_b, mu_c;
     cv::Mat1b roi_a = window(_A), roi_b = window(_B), roi_c = window(_C);
     mu_a = cv::mean(roi_a);
@@ -110,17 +110,14 @@ bool VarianceClassifier::classify(cv::Mat1b &window) {
 
     if(predictedLabel < 0 ) { // non face threshold
         return false;
-    } else {
-        return true; // TODO: capire come fare a trovare k in maniera decente
     }
 
     cv::Scalar helper = _getMForABC(window);
     double ma = helper[0], mb = helper[1], mc = helper[2];
-    if(mb < _k*ma || mb < _k*mc) {
-        return false;
+    if(mb < _k*ma && mb < _k*mc) {
+        return true;
     }
-
-    return true;
+    return false;
 
 }
 
@@ -160,8 +157,9 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
             continue;
         }
 
-        cv::Mat face = cv::imread(fileName.toStdString());
-        face = Preprocessor::gray(face);
+        cv::Mat raw = cv::imread(fileName.toStdString());
+        cv::Mat1b face = Preprocessor::gray(raw);
+        face = Preprocessor::equalize(face);
 
         cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
         cv::meanStdDev(face(_D), mu_d, sigma_d);
@@ -190,8 +188,9 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
             continue;
         }
 
-        cv::Mat face = cv::imread(fileName.toStdString());
-        face = Preprocessor::gray(face);
+        cv::Mat raw = cv::imread(fileName.toStdString());
+        cv::Mat1b face = Preprocessor::gray(raw);
+        face = Preprocessor::equalize(face);
 
         cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
         cv::meanStdDev(face(_D), mu_d, sigma_d);
@@ -211,7 +210,7 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
     }
 
     std::cout << "Negative K: " << negativeK << std::endl;
-    _k = (positiveK + negativeK)/2;
+    _k = std::max(positiveK, negativeK);
 
     delete it;
 
@@ -222,22 +221,18 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
     float priors[] = { 1.0f, 1.0f };
 
     _t->train(samples, CV_ROW_SAMPLE, labels, cv::Mat(), cv::Mat(), vartype, cv::Mat(), cv::BoostParams(
-                  cv::Boost::REAL,
-                  100,
-                  0.0,
-                  1,
-                  false,
+                  cv::Boost::REAL, // boost type
+                  300, // weak count
+                  0.95, // weight trim rate
+                  25, // max depth
+                  false, // use surrogates
                   priors));
+}
 
-    _b->train(samples,labels);
-
-    // TODO: save threshold classifers.
-
-    /*
+/*
     cv::rectangle(face,_A,cv::Scalar(255,0,0));
     cv::rectangle(face,_B,cv::Scalar(255,255,0));
     cv::rectangle(face,_C,cv::Scalar(255,0,255));
     cv::rectangle(face,_D,cv::Scalar(0,0,0));
     cv::rectangle(face,_E,cv::Scalar(0,255,255));
 */
-}

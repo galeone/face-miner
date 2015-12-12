@@ -18,8 +18,9 @@ public:
     bool classify(cv::Mat1b &window);
 
 private:
-    cv::Boost *_t1, *_t2;
+    cv::Boost *_t1, *_t2, *_tLower[4], *_tUpper[4];
     std::vector<cv::Point> _positiveMFICoordinates, _negativeMFICoordinates;
+    float _delta;
 };
 
 #endif // FEATURECLASSIFIER_H
