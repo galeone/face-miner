@@ -42,6 +42,123 @@ void SVMClassifier::_haarWavelet(cv::Mat src, cv::Mat &dst, int NIter) {
     }
 }
 
+void haar_2d ( int m, int n, double u[] )
+
+//****************************************************************************80
+//
+//  Purpose:
+//
+//    HAAR_2D computes the Haar transform of an array.
+//
+//  Discussion:
+//
+//    For the classical Haar transform, M and N should be a power of 2.
+//    However, this is not required here.
+//
+//  Licensing:
+//
+//    This code is distributed under the GNU LGPL license.
+//
+//  Modified:
+//
+//    06 March 2014
+//
+//  Author:
+//
+//    John Burkardt
+//
+//  Parameters:
+//
+//    Input, int M, N, the dimensions of the array.
+//
+//    Input/output, double U[M*N], the array to be transformed.
+//
+{
+    int i;
+    int j;
+    int k;
+    double s;
+    double *v;
+
+    s = sqrt ( 2.0 );
+
+    v = new double[m*n];
+
+    for ( j = 0; j < n; j++ )
+    {
+        for ( i = 0; i < m; i++ )
+        {
+            v[i+j*m] = u[i+j*m];
+        }
+    }
+    //
+    //  Determine K, the largest power of 2 such that K <= M.
+    //
+    k = 1;
+    while ( k * 2 <= m )
+    {
+        k = k * 2;
+    }
+    //
+    //  Transform all columns.
+    //
+    while ( 1 < k )
+    {
+        k = k / 2;
+
+        for ( j = 0; j < n; j++ )
+        {
+            for ( i = 0; i < k; i++ )
+            {
+                v[i  +j*m] = ( u[2*i+j*m] + u[2*i+1+j*m] ) / s;
+                v[k+i+j*m] = ( u[2*i+j*m] - u[2*i+1+j*m] ) / s;
+            }
+        }
+        for ( j = 0; j < n; j++ )
+        {
+            for ( i = 0; i < 2 * k; i++ )
+            {
+                u[i+j*m] = v[i+j*m];
+            }
+        }
+    }
+    //
+    //  Determine K, the largest power of 2 such that K <= N.
+    //
+    k = 1;
+    while ( k * 2 <= n )
+    {
+        k = k * 2;
+    }
+    //
+    //  Transform all rows.
+    //
+    while ( 1 < k )
+    {
+        k = k / 2;
+
+        for ( j = 0; j < k; j++ )
+        {
+            for ( i = 0; i < m; i++ )
+            {
+                v[i+(  j)*m] = ( u[i+2*j*m] + u[i+(2*j+1)*m] ) / s;
+                v[i+(k+j)*m] = ( u[i+2*j*m] - u[i+(2*j+1)*m] ) / s;
+            }
+        }
+
+        for ( j = 0; j < 2 * k; j++ )
+        {
+            for ( i = 0; i < m; i++ )
+            {
+                u[i+j*m] = v[i+j*m];
+            }
+        }
+    }
+    delete [] v;
+    return;
+}
+//****************************************************************************80
+
 // _getFeatures extract every feature required in the classification
 // thus intensities + haar like features
 void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
@@ -76,33 +193,55 @@ void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
     // al momento provo solo a testare sbattendo dentro al feature vector ogni punto dell'immagine integrale
     // se non va un cazzo cerco di capire come si fa con le haar like feature (anche se sul paper parla di coefficienti
     // della trasofrmata di haar. Che vabbé).
-    /*
+
     cv::Mat1f haar;
     cv::Mat1f roi1F, roi2F;
     roi1.convertTo(roi1F, CV_32FC1);
     roi2.convertTo(roi2F, CV_32FC1);
 
-    _haarWavelet(roi1F, haar, 2);
+    //_haarWavelet(roi1F, haar, 2);
+    int m = roi1F.rows, n = roi1F.cols;
+    double u[m*n];
+    auto count = 0;
+    for(auto y=0;y<n;++y) {
+        for(auto x=0;x<m;++x){
+            u[count++] = roi1F.at<float>(y,x);
+        }
+    }
 
+    haar_2d(m,n,u);
+    count = 0;
     for(auto row = 0; row < _r1.height; ++row) {
         pos.y = row;
         for(auto col=0;col<_r1.width;++col) {
             pos.x = col;
-            coeff.at<float>(0, counter) = haar.at<float>(pos);
+            coeff.at<float>(0, counter) = u[count++];
             ++counter;
         }
     }
 
-    _haarWavelet(roi2F, haar, 2);
+    m = roi2F.rows, n = roi2F.cols;
+    double v[m*n];
+    count = 0;
+    for(auto y=0;y<n;++y) {
+        for(auto x=0;x<m;++x){
+            v[count++] = roi2F.at<float>(y,x);
+        }
+    }
+
+    haar_2d(m,n,v);
+
+    //_haarWavelet(roi2F, haar, 2);
+    count = 0;
     for(auto row = 0; row < _r2.height; ++row) {
         pos.y = row;
         for(auto col=0;col<_r2.width;++col) {
             pos.x = col;
-            coeff.at<float>(0, counter) = haar.at<float>(pos);
+            coeff.at<float>(0, counter) = v[count++];
             ++counter;
         }
     }
-    */
+
 }
 
 // source must be CV1FC1
@@ -125,6 +264,7 @@ bool SVMClassifier::classify(cv::Mat1b &window) {
 }
 
 void SVMClassifier::train(QString positiveTrainingSet, QString negativeTrainingSet) {
+    const char *filename = "svm-trained.xml";
 
     QDirIterator *it = new QDirIterator(positiveTrainingSet);
     auto positiveCount = 0;
@@ -194,8 +334,13 @@ void SVMClassifier::train(QString positiveTrainingSet, QString negativeTrainingS
     // Set up SVM's parameters
     CvSVMParams params;
     params.svm_type    = CvSVM::C_SVC;
-    params.kernel_type = CvSVM::LINEAR;
+    params.kernel_type = CvSVM::POLY;
+    params.degree = 2;
+    params.gamma = 1;
+    //params.gamma = 1
     //params.term_crit   = cv::TermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
 
-    _svm->train(samples, labels, cv::Mat(), cv::Mat(),params);
+    //_svm->train(samples, labels, cv::Mat(), cv::Mat(),params);
+    _svm->train_auto(samples,labels,cv::Mat(), cv::Mat(),params);
+    _svm->save(filename);
 }
