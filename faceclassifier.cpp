@@ -98,6 +98,7 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
             // only equalize, each level is just gray
             roi = Preprocessor::equalize(roi);
 
+            //if(_vc->classify(roi) && _fc->classify(roi) && _sc->classify(roi)) {
             if(_vc->classify(roi) && _fc->classify(roi)) {
                 std::cout << "dentro" << std::endl;
                 //cv::namedWindow(name.append("lol"));

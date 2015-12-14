@@ -224,10 +224,11 @@ void FacePatternMiner::_trainClassifiers() {
     // Classifiers1
     _varianceClassifier = new VarianceClassifier(*_trainImageSize);
     _featureClassifier = new FeatureClassifier(_positiveMFICoordinates, _negativeMFICoordinates);
-    _svmClassifier = new SVMClassifier(cv::Range(5,8), cv::Range(11, 14));
+    _svmClassifier = new SVMClassifier(cv::Rect(0,5,_trainImageSize->width, 3), cv::Rect(0, 11, _trainImageSize->width, 3));
 
     _varianceClassifier->train(_positiveTrainSet, _negativeTrainSet);
     _featureClassifier->train(_positiveTrainSet, _negativeTrainSet);
+    _svmClassifier->train(_positiveTrainSet, _negativeTrainSet);
 
     std::cout << "[+] Classifiers sucessully trained" << std::endl;
 
