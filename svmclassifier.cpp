@@ -167,6 +167,7 @@ void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
 
     auto counter = 0;
     cv::Point pos(0,0);
+
     for(auto row = 0; row < _r1.height; ++row) {
         pos.y = row;
         for(auto col=0;col<_r1.width;++col) {
@@ -200,7 +201,7 @@ void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
     roi2.convertTo(roi2F, CV_32FC1);
 
     //_haarWavelet(roi1F, haar, 2);
-    int m = roi1F.rows, n = roi1F.cols;
+    int m = roi1F.cols, n = roi1F.rows;
     double u[m*n];
     auto count = 0;
     for(auto y=0;y<n;++y) {
@@ -220,7 +221,7 @@ void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
         }
     }
 
-    m = roi2F.rows, n = roi2F.cols;
+    m = roi2F.cols, n = roi2F.rows;
     double v[m*n];
     count = 0;
     for(auto y=0;y<n;++y) {
@@ -300,6 +301,7 @@ void SVMClassifier::train(QString positiveTrainingSet, QString negativeTrainingS
 
         cv::Mat face = cv::imread(fileName.toStdString());
         face = Preprocessor::gray(face);
+        face = Preprocessor::equalize(face);
 
         labels.at<float>(counter, 0) = 1;
 
@@ -319,6 +321,7 @@ void SVMClassifier::train(QString positiveTrainingSet, QString negativeTrainingS
 
         cv::Mat face = cv::imread(fileName.toStdString());
         face = Preprocessor::gray(face);
+        face = Preprocessor::equalize(face);
 
         labels.at<float>(counter, 0) = -1;
 
@@ -333,12 +336,12 @@ void SVMClassifier::train(QString positiveTrainingSet, QString negativeTrainingS
 
     // Set up SVM's parameters
     CvSVMParams params;
+    /*
     params.svm_type    = CvSVM::C_SVC;
-    params.kernel_type = CvSVM::POLY;
-    params.degree = 2;
-    params.gamma = 1;
-    //params.gamma = 1
-    //params.term_crit   = cv::TermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
+    params.kernel_type = CvSVM::RBF;
+    params.gamma = 10;*/
+
+    //params.term_crit   = cv::TermCriteria(CV_TERMCRIT_ITER, 1000, 1e-6);
 
     //_svm->train(samples, labels, cv::Mat(), cv::Mat(),params);
     _svm->train_auto(samples,labels,cv::Mat(), cv::Mat(),params);
