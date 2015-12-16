@@ -8,7 +8,6 @@
 #include <fstream>
 #include <QString>
 #include <opencv2/core.hpp>
-#include <opencv2/ml.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 class VarianceClassifier : public IClassifier
@@ -22,7 +21,6 @@ public:
 private:
     cv::Rect _A, _B, _C, _D, _E;
     float _t;
-    cv::NormalBayesClassifier *_b;
     float _k;
     QString _testPositive, _testNegative;
 };

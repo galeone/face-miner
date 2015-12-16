@@ -19,7 +19,7 @@ cv::Rect FaceClassifier::_expand(cv::Rect rect, float scaleFactor) {
 //Returns true if contains some faces. Hilight with a rectangle the face on the image.
 bool FaceClassifier::classify(cv::Mat &image) {
     cv::vector<cv::Rect> allCandidates;
-    float scaleFactor = 1.2;
+    float scaleFactor = 1.25;
     size_t iter_count = 0;
     cv::Mat1b gray = Preprocessor::gray(image);
     // pyramid downsampling

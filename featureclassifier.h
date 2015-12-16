@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <QString>
 #include <QDirIterator>
-#include <opencv2/ml.hpp>
+#include <opencv2/core.hpp>
 
 class FeatureClassifier : IClassifier {
 public:
@@ -19,7 +19,7 @@ public:
     bool classify(cv::Mat1b &window);
 
 private:
-    double _t1, _t2, _tLower[4], _tUpper[4], _delta;
+    double _t1, _t2, _tLower[4], _tUpper[4];
     std::vector<cv::Point> _positiveMFICoordinates, _negativeMFICoordinates;
     QString _testPositive, _testNegative;
 };
