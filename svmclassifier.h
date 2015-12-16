@@ -7,12 +7,14 @@
 #include <QString>
 #include <QDirIterator>
 #include "preprocessor.h"
+#include "stats.h"
+#include "iclassifier.h"
 
 
-class SVMClassifier
+class SVMClassifier : public IClassifier
 {
 public:
-    SVMClassifier(const cv::Rect &rows1, const cv::Rect &rows2);
+    SVMClassifier(const cv::Rect &rows1, const cv::Rect &rows2, QString test_positive, QString test_negative);
     bool classify(cv::Mat1b &window);
     void train(QString positiveTrainingSet, QString negativeTrainingSet);
 
@@ -21,6 +23,7 @@ private:
     cv::Rect _r1, _r2;
     cv::SVM *_svm;
     uint32_t _featureVectorCard;
+    QString _testPositive, _testNegative;
 
     void _getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff);
     void _insertLineAtPosition(const cv::Mat1f &source, cv::Mat1f &dest, uint32_t position);

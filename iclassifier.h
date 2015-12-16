@@ -7,6 +7,7 @@ class IClassifier
 {
 public:
     virtual ~IClassifier(){}
+    virtual bool classify(cv::Mat1b &) = 0;
 
     // http://dlib.net/dlib/statistics/lda_abstract.h.html#equal_error_rate
     /*

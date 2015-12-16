@@ -70,27 +70,26 @@ bool FaceClassifier::classify(cv::Mat &image) {
 // scaled by factor (thus is compatible with level) with level
 void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<cv::Rect> &allCandidates) {
     cv::Size winSize(_windowSize.width*factor, _windowSize.height*factor);
-    std::vector<cv::Rect> toSkip;
 
+    std::vector<cv::Rect> toSkip;
     for(const cv::Rect &r : allCandidates) {
         toSkip.push_back(cv::Rect(r.x/factor, r.y/factor, r.width/factor, r.height/factor));
     }
 
     std::string name("ASD");
-    for(auto x=0; x<=level.cols - _windowSize.width; x+=_step) {
-        for(auto y=0; y<=level.rows - _windowSize.height; y+=_step) {
+    for(auto y=0; y<level.rows - _windowSize.height; y+=_step) {
+        for(auto x=0; x<level.cols - _windowSize.width; x+=_step) {
             cv::Rect roi_rect(x, y, _windowSize.width, _windowSize.height);
 
             // if roi_rect intersect a toSkip element, lets continue
             auto exists = std::find_if(toSkip.begin(), toSkip.end(), [&](const cv::Rect &skip) {
                 /* A window overlaps the other window if the distance between
                  * the centers of both windows is less than one fifth of the window size. */
-                //return (skip & roi_rect).width > _windowSize.width/5;
-                return (skip & roi_rect).area() > 0 ;
+                return (skip & roi_rect).width > _windowSize.width/5;
+                //return (skip & roi_rect).area() > 0;
             });
 
             if(exists != toSkip.end()) { // intersection exists, we can skip
-                y+=_windowSize.height;
                 continue;
             }
 
@@ -98,15 +97,17 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
             // only equalize, each level is just gray
             roi = Preprocessor::equalize(roi);
 
-            if(_vc->classify(roi) && _fc->classify(roi) && _sc->classify(roi)) {
+            //if(_vc->classify(roi)) {
+            //if(_fc->classify(roi)) {
             //if(_vc->classify(roi) && _fc->classify(roi)) {
+            if(_vc->classify(roi) && _fc->classify(roi) && _sc->classify(roi)) {
                 std::cout << "dentro" << std::endl;
                 //cv::namedWindow(name.append("lol"));
                 //cv::imshow(name,roi);
                 cv::Rect destPos(std::round(x*factor), std::round(y*factor), winSize.width, winSize.height);
                 allCandidates.push_back(destPos);
-                // if found, we can skip next along y
-                y+=_windowSize.height;
+                // add current roi to toSkip vector
+                toSkip.push_back(roi_rect);
             }
         }
     }

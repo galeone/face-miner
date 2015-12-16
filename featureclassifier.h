@@ -3,6 +3,7 @@
 
 #include "iclassifier.h"
 #include "preprocessor.h"
+#include "stats.h"
 #include <vector>
 #include <iostream>
 #include <cstdint>
@@ -12,15 +13,15 @@
 
 class FeatureClassifier : IClassifier {
 public:
-    FeatureClassifier(std::vector<cv::Point> &, std::vector<cv::Point> &);
+    FeatureClassifier(std::vector<cv::Point> &, std::vector<cv::Point> &, QString test_positive, QString test_negative);
     void train(QString positiveTrainingSet, QString negativeTrainingSet);
-    void setConstants(cv::Mat1b &raw, int32_t *_c1, int32_t *_c2, int32_t *_c3, int32_t *_c4);
+    void setConstants(cv::Mat1b &raw, double *_c1, double *_c2, double *_c3, double *_c4);
     bool classify(cv::Mat1b &window);
 
 private:
-    cv::Boost *_t1, *_t2, *_tLower[4], *_tUpper[4];
+    double _t1, _t2, _tLower[4], _tUpper[4], _delta;
     std::vector<cv::Point> _positiveMFICoordinates, _negativeMFICoordinates;
-    float _delta;
+    QString _testPositive, _testNegative;
 };
 
 #endif // FEATURECLASSIFIER_H

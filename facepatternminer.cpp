@@ -180,7 +180,18 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport, std::vec
         coordinates.push_back(pos);
         ret.at<uchar>(pos) = 255;
     }
-
+/*
+    for (int row=0;row<ret.rows;row++)
+    {
+       for (int col=0;col<ret.cols;col++)
+        {
+              if(ret.at<uchar>(row,col) == 255) {
+                  std::cout << "First white position: " << cv::Point(col, row) << std::endl;
+                  break;
+              }
+        }
+    }
+*/
     return ret;
 }
 
@@ -197,12 +208,12 @@ void FacePatternMiner::start() {
 
     // Test, pick a random image.
     //cv::Mat test = cv::imread("./datasets/mitcbcl/test/face/cmu_0000.pgm");
-    /*
-    cv::Mat test = cv::imread("./datasets/test.jpg");
+
+/*    cv::Mat test = cv::imread("./datasets/test.jpg");
     _faceClassifier->classify(test);
     cv::namedWindow("test1");
     cv::imshow("test1", test);
-    */
+*/
     cv::Mat test2 = cv::imread("./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm");
     _faceClassifier->classify(test2);
     cv::namedWindow("test2");
@@ -221,10 +232,15 @@ void FacePatternMiner::start() {
 }
 
 void FacePatternMiner::_trainClassifiers() {
-    // Classifiers1
-    _varianceClassifier = new VarianceClassifier(*_trainImageSize);
-    _featureClassifier = new FeatureClassifier(_positiveMFICoordinates, _negativeMFICoordinates);
-    _svmClassifier = new SVMClassifier(cv::Rect(0,5,_trainImageSize->width, 3), cv::Rect(0, 11, _trainImageSize->width, 3));
+    // Classifiers
+    _varianceClassifier = new VarianceClassifier(*_trainImageSize, _positiveTestSet, _negativeTestSet);
+    _featureClassifier = new FeatureClassifier(_positiveMFICoordinates, _negativeMFICoordinates, _positiveTestSet, _negativeTestSet);
+    // 5-6, 11-13
+    _svmClassifier = new SVMClassifier(cv::Rect(0,5,_trainImageSize->width, 2),
+                                       cv::Rect(0, 11, _trainImageSize->width, 3),
+                                       _positiveTestSet, _negativeTestSet);
+
+    std::cout << "[+] Training classifiers" << std::endl;
 
     _varianceClassifier->train(_positiveTrainSet, _negativeTrainSet);
     _featureClassifier->train(_positiveTrainSet, _negativeTrainSet);

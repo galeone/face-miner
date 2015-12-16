@@ -10,7 +10,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/objdetect.hpp>
 
-class FaceClassifier : public IClassifier
+class FaceClassifier
 {
 public:
     FaceClassifier(VarianceClassifier *vc, FeatureClassifier *fc, SVMClassifier *svmc, cv::Size size);

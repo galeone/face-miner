@@ -1,6 +1,8 @@
 #include "varianceclassifier.h"
 
-VarianceClassifier::VarianceClassifier(const cv::Size windowSize) {
+VarianceClassifier::VarianceClassifier(const cv::Size windowSize, QString test_positive, QString test_negative) {
+    _testPositive = test_positive;
+    _testNegative = test_negative;
     auto cols = windowSize.width,
             rows = windowSize.height;
 
@@ -30,9 +32,15 @@ VarianceClassifier::VarianceClassifier(const cv::Size windowSize) {
     // Right eye region
     _C = cv::Rect(cols - ac_cols, 2*topHeight, ac_cols, topHeight);
 
-    _t = new cv::Boost();
-    _b = new cv::NormalBayesClassifier();
-    _k = 0;
+    _k = 1.1;
+    /*T: << 3917.79
+K: 1
+True positive: 114
+True negative: 15524
+False positive: 8049
+False negatve: 358
+Precision: 0.0139655
+Recall: 0.241525*/
 }
 
 cv::Scalar VarianceClassifier::_getMForABC(cv::Mat1b &window) {
@@ -101,23 +109,16 @@ bool VarianceClassifier::classify(cv::Mat1b &window) {
     cv::meanStdDev(window(_D), mu_d, sigma_d);
     cv::meanStdDev(window(_E), mu_e, sigma_e);
 
-    //calculate sample threshold
-    float t = std::max(sigma_d[0], sigma_e[0]);
-
-    cv::Mat1f sample = (cv::Mat1f(1,1) << t);
-    auto predictedLabel = _t->predict(sample);
-    //prediction = _b->predict(sample);
-
-    if(predictedLabel < 0 ) { // non face threshold
+    if(std::pow(sigma_d[0],2) < _t || std::pow(sigma_e[0],2) < _t) {
         return false;
     }
 
     cv::Scalar helper = _getMForABC(window);
     double ma = helper[0], mb = helper[1], mc = helper[2];
-    if(mb < _k*ma && mb < _k*mc) {
-        return true;
+    if(mb < _k*ma || mb < _k*mc) {
+        return false;
     }
-    return false;
+    return true;
 
 }
 
@@ -125,6 +126,7 @@ bool VarianceClassifier::classify(cv::Mat1b &window) {
 // we suppose that face has the same dimension of _positiveMFI / _negativeMFI
 void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrainingSet) {
     QDirIterator *it = new QDirIterator(positiveTrainingSet);
+    std::vector<double> positiveT, negativeT, positiveK, negativeK;
     auto positiveCount = 0;
     while(it->hasNext()) {
         auto fileName = it->next();
@@ -144,12 +146,6 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
         ++negativeCount;
     }
 
-    cv::Mat1f labels(positiveCount + negativeCount,1,CV_32FC1),
-            samples(positiveCount + negativeCount,1, CV_32FC1);
-
-    auto counter = 0;
-    float positiveK  = 1, negativeK  = 1;
-
     it = new QDirIterator(positiveTrainingSet);
     while(it->hasNext()) {
         auto fileName = it->next();
@@ -165,21 +161,9 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
         cv::meanStdDev(face(_D), mu_d, sigma_d);
         cv::meanStdDev(face(_E), mu_e, sigma_e);
 
-        double t = std::max(sigma_d[0], sigma_e[0]);
-
-        labels.at<float>(counter, 0) = 1;
-        samples.at<float>(counter, 0) = t;
-        ++counter;
-
-        cv::Scalar helper = _getMForABC(face);
-        double ma = helper[0], mb = helper[1], mc = helper[2];
-        while((ma > 0 && mc > 0) && (mb < positiveK*ma || mb < positiveK*mc)) {
-            --positiveK;
-        }
+        positiveT.push_back(std::pow(sigma_d[0],2));
+        positiveT.push_back(std::pow(sigma_e[0],2));
     }
-    std::cout << "Positive K " << positiveK << std::endl;
-
-    negativeK = -1;
 
     it = new QDirIterator(negativeTrainingSet);
     while(it->hasNext()) {
@@ -196,37 +180,17 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
         cv::meanStdDev(face(_D), mu_d, sigma_d);
         cv::meanStdDev(face(_E), mu_e, sigma_e);
 
-        double t = std::max(sigma_d[0], sigma_e[0]);
-
-        labels.at<float>(counter, 0) = -1;
-        samples.at<float>(counter, 0) = t;
-        ++counter;
-
-        cv::Scalar helper = _getMForABC(face);
-        double ma = helper[0], mb = helper[1], mc = helper[2];
-        while((ma > 0 && mc > 0) && (mb >= negativeK*ma || mb >= negativeK*mc)) {
-            ++negativeK;
-        }
+        negativeT.push_back(std::pow(sigma_d[0],2));
+        negativeT.push_back(std::pow(sigma_e[0],2));
     }
 
-    std::cout << "Negative K: " << negativeK << std::endl;
-    _k = std::max(positiveK, negativeK);
+    std::cout << "[!] Variance classfier:\n";
+    _t = equal_error_rate(positiveT,negativeT).second;
+    std::cout << "T: << " << _t << "\nK: " << _k << std::endl;
 
     delete it;
 
-    cv::Mat vartype(samples.cols+1,1,CV_8U);
-    vartype.setTo(cv::Scalar(CV_VAR_NUMERICAL));
-    vartype.at<uchar>(samples.cols,0) = CV_VAR_CATEGORICAL;
-
-    float priors[] = { 1.0f, 1.0f };
-
-    _t->train(samples, CV_ROW_SAMPLE, labels, cv::Mat(), cv::Mat(), vartype, cv::Mat(), cv::BoostParams(
-                  cv::Boost::REAL, // boost type
-                  300, // weak count
-                  0.95, // weight trim rate
-                  25, // max depth
-                  false, // use surrogates
-                  priors));
+    Stats::print(_testPositive, _testNegative, this);
 }
 
 /*

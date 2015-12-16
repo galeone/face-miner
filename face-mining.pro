@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     varianceclassifier.cpp \
     svmclassifier.cpp \
     faceclassifier.cpp \
-    preprocessor.cpp
+    preprocessor.cpp \
+    stats.cpp
 
 HEADERS  += facialrecognition.h \
     cameracalibrationworker.h \
@@ -43,7 +44,8 @@ HEADERS  += facialrecognition.h \
     varianceclassifier.h \
     svmclassifier.h \
     faceclassifier.h \
-    preprocessor.h
+    preprocessor.h \
+    stats.h
 
 FORMS    += facialrecognition.ui
 
