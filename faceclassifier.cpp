@@ -8,14 +8,6 @@ FaceClassifier::FaceClassifier(VarianceClassifier *vc, FeatureClassifier *fc, SV
     _step = 2;
 }
 
-cv::Rect FaceClassifier::_expand(cv::Rect rect, float scaleFactor) {
-    cv::Size deltaSize( rect.width * scaleFactor, rect.height * scaleFactor );
-    cv::Point offset( deltaSize.width/2, deltaSize.height/2);
-    rect += deltaSize;
-    rect -= offset;
-    return rect;
-}
-
 //Returns true if contains some faces. Hilight with a rectangle the face on the image.
 bool FaceClassifier::classify(cv::Mat &image) {
     cv::vector<cv::Rect> allCandidates;

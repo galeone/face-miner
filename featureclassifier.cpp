@@ -1,10 +1,7 @@
 #include "featureclassifier.h"
 
 FeatureClassifier::FeatureClassifier(std::vector<cv::Point> &positiveMFICoordinates,
-                                     std::vector<cv::Point> &negativeMFICoordinates,
-                                     QString test_positive, QString test_negative) {
-    _testPositive = test_positive;
-    _testNegative = test_negative;
+                                     std::vector<cv::Point> &negativeMFICoordinates) {
     _positiveMFICoordinates = positiveMFICoordinates;
     _negativeMFICoordinates = negativeMFICoordinates;
     _t1 = 0;
@@ -116,7 +113,6 @@ void FeatureClassifier::train(QString positiveTrainingSet, QString negativeTrain
         _tLower[i] = *std::min_element(positiveCoeff[i].begin(), positiveCoeff[i].end());
     }
 
-    std::cout << "[!] Features classfier:\n";
     std::cout << "T1: " << _t1 <<"\nT2: " << _t2 << "\n";
     for(auto i=0;i<4;++i) {
         std::cout << "T_lower{" << i << "} = " << _tLower[i] << "\n";
@@ -125,8 +121,6 @@ void FeatureClassifier::train(QString positiveTrainingSet, QString negativeTrain
     std::cout << std::endl;
 
     delete it;
-
-    Stats::print(_testPositive, _testNegative, this);
 }
 
 // Classify suppose gray and equalized window

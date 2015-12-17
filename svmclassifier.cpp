@@ -1,17 +1,13 @@
 #include "svmclassifier.h"
 
 // rows1/2 are the positions in the window, where to ectract px intensities and haar features
-SVMClassifier::SVMClassifier(const cv::Rect &rows1, const cv::Rect &rows2, QString test_positive, QString test_negative) {
-    _testPositive = test_positive;
-    _testNegative = test_negative;
+SVMClassifier::SVMClassifier(const cv::Rect &rows1, const cv::Rect &rows2) {
     _r1 = rows1;
     _r2 = rows2;
     _svm = new cv::SVM();
-    _featureVectorCard = _r1.width * (_r1.height + _r2.height);
+    _featureVectorCard = _r1.width * (_r1.height + _r2.height) * 2;
     std::cout << _r1 << " " << _r2 << std::endl;
     std::cout << _featureVectorCard << " < size of feature vector" << std::endl;
-    //exit(-1);
-    //_featureVectorCard = _r1.width * (_r1.height + _r2.height);
 }
 
 //--------------------------------
@@ -162,7 +158,7 @@ void haar_2d ( int m, int n, double u[] )
     delete [] v;
     return;
 }
-//****************************************************************************80
+//****************************************************************************
 
 // _getFeatures extract every feature required in the classification
 // thus intensities + haar like features
@@ -172,7 +168,7 @@ void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
 
     auto counter = 0;
     cv::Point pos(0,0);
-    /*
+
     for(auto row = 0; row < _r1.height; ++row) {
         pos.y = row;
         for(auto col=0;col<_r1.width;++col) {
@@ -190,16 +186,6 @@ void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
             ++counter;
         }
     }
-    */
-
-    // intensities. Now coefficents of the haar transform
-    // come faccio ad ottenere tante features quanti sono i px contenenti l'immagine se
-    // per ottenere le features sono fare la differenze di rettangoli appartenenti all immagine
-    // integrale facendo scorrere una window su questa? WTF.
-
-    // al momento provo solo a testare sbattendo dentro al feature vector ogni punto dell'immagine integrale
-    // se non va un cazzo cerco di capire come si fa con le haar like feature (anche se sul paper parla di coefficienti
-    // della trasofrmata di haar. Che vabbé).
 
     cv::Mat1f haar;
     cv::Mat1f roi1F, roi2F;
@@ -257,61 +243,24 @@ void SVMClassifier::_insertLineAtPosition(const cv::Mat1f &source, cv::Mat1f &de
 bool SVMClassifier::classify(cv::Mat1b &window) {
     cv::Mat1f coeff;
     _getFeatures(window, coeff);
-
-    auto predictedLabel = _svm->predict(coeff);
-
-    if(predictedLabel < 0 ) { // non face threshold
-        return false;
-    }
-    return true;
+    return _svm->predict(coeff) > 0;
 }
 
-void SVMClassifier::train(QString positiveTrainingSet, QString negativeTrainingSet) {
-    std::cout << "[!] SVM classfier:\n";
+void SVMClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::Mat1b> &falsePositive){
     const char *filename = "svm-trained.xml";
     _svm->load(filename);
     if(_svm->get_support_vector_count() > 0) { // trained model exist
         std::cout << "Using existing trained model" << std::endl;
-        Stats::print(_testPositive, _testNegative, this);
         return;
     }
 
-    QDirIterator *it = new QDirIterator(positiveTrainingSet);
-    auto positiveCount = 0;
-    while(it->hasNext()) {
-        auto fileName = it->next();
-        if(!Preprocessor::validMime(fileName)) {
-            continue;
-        }
-        ++positiveCount;
-    }
+    auto positiveCount = truePositive.size(), negativeCount = falsePositive.size();
 
-    auto negativeCount = 0;
-    it = new QDirIterator(negativeTrainingSet);
-    while(it->hasNext()) {
-        auto fileName = it->next();
-        if(!Preprocessor::validMime(fileName)) {
-            continue;
-        }
-        ++negativeCount;
-    }
-
-    cv::Mat1f labels(positiveCount + negativeCount,1,CV_32FC1),
-            samples(positiveCount + negativeCount,_featureVectorCard, CV_32FC1);
+    cv::Mat1f labels(positiveCount + negativeCount, 1, CV_32FC1),
+            samples(positiveCount + negativeCount, _featureVectorCard, CV_32FC1);
 
     auto counter = 0;
-
-    it = new QDirIterator(positiveTrainingSet);
-    while(it->hasNext()) {
-        auto fileName = it->next();
-        if(!Preprocessor::validMime(fileName)) {
-            continue;
-        }
-
-        cv::Mat face = cv::imread(fileName.toStdString());
-        face = Preprocessor::gray(face);
-        face = Preprocessor::equalize(face);
-
+    for(const auto &face : truePositive) {
         labels.at<float>(counter, 0) = 1;
 
         cv::Mat1f row;
@@ -321,17 +270,7 @@ void SVMClassifier::train(QString positiveTrainingSet, QString negativeTrainingS
         ++counter;
     }
 
-    it = new QDirIterator(negativeTrainingSet);
-    while(it->hasNext()) {
-        auto fileName = it->next();
-        if(!Preprocessor::validMime(fileName)) {
-            continue;
-        }
-
-        cv::Mat face = cv::imread(fileName.toStdString());
-        face = Preprocessor::gray(face);
-        face = Preprocessor::equalize(face);
-
+    for(const auto &face : falsePositive) {
         labels.at<float>(counter, 0) = -1;
 
         cv::Mat1f row;
@@ -341,13 +280,12 @@ void SVMClassifier::train(QString positiveTrainingSet, QString negativeTrainingS
         ++counter;
     }
 
-    delete it;
-
     // Set up SVM's parameters
     CvSVMParams params;
 
-    params.svm_type    = CvSVM::C_SVC;
-    params.kernel_type = CvSVM::LINEAR;
+    // using default parameters
+    //params.svm_type    = CvSVM::C_SVC;
+    //params.kernel_type = CvSVM::RBF;
     //params.gamma = 10;
 
     //params.term_crit   = cv::TermCriteria(CV_TERMCRIT_ITER, 1000, 1e-6);
@@ -356,7 +294,5 @@ void SVMClassifier::train(QString positiveTrainingSet, QString negativeTrainingS
     _svm->train_auto(samples,labels,cv::Mat(), cv::Mat(),params);
     _svm->save(filename);
 
-    std::cout << "Trained successfull" << std::endl;
-    Stats::print(_testPositive, _testNegative, this);
-
+    std::cout << "[T] SVM trained successfull" << std::endl;
 }

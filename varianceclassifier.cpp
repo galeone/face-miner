@@ -1,8 +1,6 @@
 #include "varianceclassifier.h"
 
-VarianceClassifier::VarianceClassifier(const cv::Size windowSize, QString test_positive, QString test_negative) {
-    _testPositive = test_positive;
-    _testNegative = test_negative;
+VarianceClassifier::VarianceClassifier(const cv::Size windowSize) {
     auto cols = windowSize.width,
             rows = windowSize.height;
 
@@ -184,13 +182,10 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
         negativeT.push_back(std::pow(sigma_e[0],2));
     }
 
-    std::cout << "[!] Variance classfier:\n";
     _t = equal_error_rate(positiveT,negativeT).second;
     std::cout << "T: << " << _t << "\nK: " << _k << std::endl;
 
     delete it;
-
-    Stats::print(_testPositive, _testNegative, this);
 }
 
 /*

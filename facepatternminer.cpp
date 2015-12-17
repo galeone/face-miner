@@ -180,7 +180,7 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport, std::vec
         coordinates.push_back(pos);
         ret.at<uchar>(pos) = 255;
     }
-/*
+    /*
     for (int row=0;row<ret.rows;row++)
     {
        for (int col=0;col<ret.cols;col++)
@@ -209,7 +209,7 @@ void FacePatternMiner::start() {
     // Test, pick a random image.
     //cv::Mat test = cv::imread("./datasets/mitcbcl/test/face/cmu_0000.pgm");
 
-/*    cv::Mat test = cv::imread("./datasets/test.jpg");
+    /*    cv::Mat test = cv::imread("./datasets/test.jpg");
     _faceClassifier->classify(test);
     cv::namedWindow("test1");
     cv::imshow("test1", test);
@@ -233,20 +233,63 @@ void FacePatternMiner::start() {
 
 void FacePatternMiner::_trainClassifiers() {
     // Classifiers
-    _varianceClassifier = new VarianceClassifier(*_trainImageSize, _positiveTestSet, _negativeTestSet);
-    _featureClassifier = new FeatureClassifier(_positiveMFICoordinates, _negativeMFICoordinates, _positiveTestSet, _negativeTestSet);
+    _varianceClassifier = new VarianceClassifier(*_trainImageSize);
+    _featureClassifier = new FeatureClassifier(_positiveMFICoordinates, _negativeMFICoordinates);
     // 5-6, 11-13
     _svmClassifier = new SVMClassifier(cv::Rect(0,5,_trainImageSize->width, 2),
-                                       cv::Rect(0, 11, _trainImageSize->width, 3),
-                                       _positiveTestSet, _negativeTestSet);
+                                       cv::Rect(0, 11, _trainImageSize->width, 3));
 
     std::cout << "[+] Training classifiers" << std::endl;
-
+    std::cout << "\tVariance classifier: " << std::endl;
     _varianceClassifier->train(_positiveTrainSet, _negativeTrainSet);
+    //.fist = true positive, .second = false positive
+    auto positivesVC = Stats::test(_positiveTestSet, _negativeTestSet, _varianceClassifier);
+
+    std::cout << "\tFeatures classifier: " << std::endl;
     _featureClassifier->train(_positiveTrainSet, _negativeTrainSet);
-    _svmClassifier->train(_positiveTrainSet, _negativeTrainSet);
+    auto positivesFC = Stats::test(_positiveTestSet, _negativeTestSet, _featureClassifier);
 
-    std::cout << "[+] Classifiers sucessully trained" << std::endl;
+    std::vector<cv::Mat1b> truePositives, falsePositives;
+/*
+    for(auto it = positivesVC.first.begin(); it != positivesVC.first.end();++it) {
+        for(auto it2 = positivesFC.first.begin(); it2 != positivesFC.first.end(); ++it2) {
+            if(std::equal((*it).begin(), (*it).end(), (*it2).end())) {
+                positivesVC.first.erase(it);
+                std::cout << "removed duplicated true positive" <<std::endl;
+                break;
+            }
+        }
+    }
 
-    _faceClassifier = new FaceClassifier(_varianceClassifier,_featureClassifier,_svmClassifier, *_trainImageSize);
+    for(auto it = positivesVC.second.begin(); it != positivesVC.second.end();++it) {
+        for(auto it2 = positivesFC.second.begin(); it2 != positivesFC.second.end(); ++it2) {
+            if(std::equal((*it).begin(), (*it).end(), (*it2).end())) {
+                positivesVC.second.erase(it);
+                std::cout << "removed duplicated false positive" <<std::endl;
+                break;
+            }
+        }
+    }
+*/
+
+    truePositives.reserve(positivesVC.first.size() + positivesFC.first.size());
+    truePositives.insert(truePositives.end(),positivesVC.first.begin(),positivesVC.first.end());
+    truePositives.insert(truePositives.end(),positivesFC.first.begin(), positivesFC.first.end());
+
+
+    falsePositives.reserve(positivesVC.second.size() + positivesFC.second.size());
+    falsePositives.insert(falsePositives.end(), positivesVC.second.begin(), positivesVC.second.end());
+    falsePositives.insert(falsePositives.end(), positivesFC.second.begin(), positivesFC.second.end());
+
+    // Training SVM on true and false positives of previous 2 classifiers
+    std::cout << "\tSVM classifier: " << std::endl;
+    _svmClassifier->train(truePositives, falsePositives);
+
+    // TODO: verificare se l'input è sbilanciato ed in tal caso modificare i parametri della svm per dare più
+    // peso a quelli che sono in numero minore
+
+    // testing on others training set (verify if there's overfitting).
+    Stats::test(_positiveTrainSet, _negativeTrainSet, _svmClassifier);
+
+    _faceClassifier = new FaceClassifier(_varianceClassifier, _featureClassifier, _svmClassifier, *_trainImageSize);
 }
