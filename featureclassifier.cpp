@@ -103,14 +103,14 @@ void FeatureClassifier::train(QString positiveTrainingSet, QString negativeTrain
         negativeCoeff[3].push_back(_c4 );
     }
 
-    _t1 = equal_error_rate(positiveT1,negativeT1).second*2;
-    _t2 = equal_error_rate(positiveT2,negativeT2).second/2;
+    _t1 = equal_error_rate(positiveT1,negativeT1).second*2.25;
+    _t2 = equal_error_rate(positiveT2,negativeT2).second/1.7;
 
     for(auto i=0;i<4;++i) {
         //_tUpper[i] = (*std::max_element(positiveCoeff[i].begin(), positiveCoeff[i].end()) + *std::max_element(negativeCoeff[i].begin(), negativeCoeff[i].end())) / 2;
         //_tLower[i] = (*std::min_element(positiveCoeff[i].begin(), positiveCoeff[i].end()) + *std::min_element(negativeCoeff[i].begin(), negativeCoeff[i].end())) / 2;
-        _tUpper[i] = *std::max_element(positiveCoeff[i].begin(), positiveCoeff[i].end());
-        _tLower[i] = *std::min_element(positiveCoeff[i].begin(), positiveCoeff[i].end());
+        _tUpper[i] = *std::max_element(positiveCoeff[i].begin(), positiveCoeff[i].end())+255;
+        _tLower[i] = *std::min_element(positiveCoeff[i].begin(), positiveCoeff[i].end())-255;
     }
 
     std::cout << "T1: " << _t1 <<"\nT2: " << _t2 << "\n";

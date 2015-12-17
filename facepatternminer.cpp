@@ -250,7 +250,7 @@ void FacePatternMiner::_trainClassifiers() {
     auto positivesFC = Stats::test(_positiveTestSet, _negativeTestSet, _featureClassifier);
 
     std::vector<cv::Mat1b> truePositives, falsePositives;
-/*
+
     for(auto it = positivesVC.first.begin(); it != positivesVC.first.end();++it) {
         for(auto it2 = positivesFC.first.begin(); it2 != positivesFC.first.end(); ++it2) {
             if(std::equal((*it).begin(), (*it).end(), (*it2).end())) {
@@ -270,7 +270,6 @@ void FacePatternMiner::_trainClassifiers() {
             }
         }
     }
-*/
 
     truePositives.reserve(positivesVC.first.size() + positivesFC.first.size());
     truePositives.insert(truePositives.end(),positivesVC.first.begin(),positivesVC.first.end());

@@ -30,7 +30,7 @@ VarianceClassifier::VarianceClassifier(const cv::Size windowSize) {
     // Right eye region
     _C = cv::Rect(cols - ac_cols, 2*topHeight, ac_cols, topHeight);
 
-    _k = 1.1;
+    _k = 1;
     /*T: << 3917.79
 K: 1
 True positive: 114
@@ -182,7 +182,7 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
         negativeT.push_back(std::pow(sigma_e[0],2));
     }
 
-    _t = equal_error_rate(positiveT,negativeT).second;
+    _t = equal_error_rate(positiveT,negativeT).second/2.1;
     std::cout << "T: << " << _t << "\nK: " << _k << std::endl;
 
     delete it;

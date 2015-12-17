@@ -5,7 +5,7 @@ SVMClassifier::SVMClassifier(const cv::Rect &rows1, const cv::Rect &rows2) {
     _r1 = rows1;
     _r2 = rows2;
     _svm = new cv::SVM();
-    _featureVectorCard = _r1.width * (_r1.height + _r2.height) * 2;
+    _featureVectorCard = _r1.width * (_r1.height + _r2.height);
     std::cout << _r1 << " " << _r2 << std::endl;
     std::cout << _featureVectorCard << " < size of feature vector" << std::endl;
 }
@@ -168,7 +168,7 @@ void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
 
     auto counter = 0;
     cv::Point pos(0,0);
-
+    /*
     for(auto row = 0; row < _r1.height; ++row) {
         pos.y = row;
         for(auto col=0;col<_r1.width;++col) {
@@ -186,6 +186,7 @@ void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
             ++counter;
         }
     }
+    */
 
     cv::Mat1f haar;
     cv::Mat1f roi1F, roi2F;
@@ -285,7 +286,7 @@ void SVMClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::
 
     // using default parameters
     //params.svm_type    = CvSVM::C_SVC;
-    //params.kernel_type = CvSVM::RBF;
+    //params.kernel_type = CvSVM::LINEAR;
     //params.gamma = 10;
 
     //params.term_crit   = cv::TermCriteria(CV_TERMCRIT_ITER, 1000, 1e-6);
