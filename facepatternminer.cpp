@@ -205,30 +205,6 @@ void FacePatternMiner::start() {
 
     emit mining_terminated(_positiveMFI, _negativeMFI);
     _trainClassifiers();
-
-    // Test, pick a random image.
-    //cv::Mat test = cv::imread("./datasets/mitcbcl/test/face/cmu_0000.pgm");
-
-    /*    cv::Mat test = cv::imread("./datasets/test.jpg");
-    _faceClassifier->classify(test);
-    cv::namedWindow("test1");
-    cv::imshow("test1", test);
-*/
-    cv::Mat test2 = cv::imread("./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm");
-    _faceClassifier->classify(test2);
-    cv::namedWindow("test2");
-    cv::imshow("test2", test2);
-
-    cv::Mat test3 = cv::imread("./datasets/test2.jpg");
-    _faceClassifier->classify(test3);
-    cv::namedWindow("test3");
-    cv::imshow("test3", test3);
-
-    cv::Mat test4 = cv::imread("./datasets/24.jpg");
-    _faceClassifier->classify(test4);
-    cv::namedWindow("test4");
-    cv::imshow("test4", test4);
-
 }
 
 void FacePatternMiner::_trainClassifiers() {
@@ -241,16 +217,24 @@ void FacePatternMiner::_trainClassifiers() {
 
     std::cout << "[+] Training classifiers" << std::endl;
     std::cout << "\tVariance classifier: " << std::endl;
+
     _varianceClassifier->train(_positiveTrainSet, _negativeTrainSet);
     //.fist = true positive, .second = false positive
     auto positivesVC = Stats::test(_positiveTestSet, _negativeTestSet, _varianceClassifier);
 
+    //test, training cascade (?)
     std::cout << "\tFeatures classifier: " << std::endl;
+    _featureClassifier->train(positivesVC.first, positivesVC.second);
+    // test on trainset to avoid overfitting
+    auto positivesFC = Stats::test(_positiveTrainSet, _negativeTrainSet, _featureClassifier);
+
+    /*
     _featureClassifier->train(_positiveTrainSet, _negativeTrainSet);
     auto positivesFC = Stats::test(_positiveTestSet, _negativeTestSet, _featureClassifier);
-
+*/
     std::vector<cv::Mat1b> truePositives, falsePositives;
 
+/*
     for(auto it = positivesVC.first.begin(); it != positivesVC.first.end();++it) {
         for(auto it2 = positivesFC.first.begin(); it2 != positivesFC.first.end(); ++it2) {
             if(std::equal((*it).begin(), (*it).end(), (*it2).end())) {
@@ -270,7 +254,7 @@ void FacePatternMiner::_trainClassifiers() {
             }
         }
     }
-
+*/
     truePositives.reserve(positivesVC.first.size() + positivesFC.first.size());
     truePositives.insert(truePositives.end(),positivesVC.first.begin(),positivesVC.first.end());
     truePositives.insert(truePositives.end(),positivesFC.first.begin(), positivesFC.first.end());
@@ -284,11 +268,9 @@ void FacePatternMiner::_trainClassifiers() {
     std::cout << "\tSVM classifier: " << std::endl;
     _svmClassifier->train(truePositives, falsePositives);
 
-    // TODO: verificare se l'input è sbilanciato ed in tal caso modificare i parametri della svm per dare più
-    // peso a quelli che sono in numero minore
-
     // testing on others training set (verify if there's overfitting).
-    Stats::test(_positiveTrainSet, _negativeTrainSet, _svmClassifier);
+    Stats::test(_positiveTestSet, _negativeTestSet, _svmClassifier);
 
     _faceClassifier = new FaceClassifier(_varianceClassifier, _featureClassifier, _svmClassifier, *_trainImageSize);
+    emit built_classifier(_faceClassifier);
 }

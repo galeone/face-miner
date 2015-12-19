@@ -12,7 +12,7 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     qRegisterMetaType<cv::Mat>("cv::Mat");
 
     QSize streamSize(300,300);
-/*
+
     cv::VideoCapture _cam(0);
 
     if (!_cam.isOpened()) {
@@ -41,7 +41,7 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
         // start thread: stream of frames
         frameStreamThread->start();
     }
-*/
+
     // set TraingStreamView to fixed size
     _getTrainingStreamView()->setSize(streamSize);
 
@@ -73,18 +73,50 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
 
     // connect preprocessingTerminated signal of miner to the GUI, to show the mined positive and negative pattern
     connect(patternMiner, &FacePatternMiner::mining_terminated,[=](const cv::Mat &positive, const cv::Mat &negative) {
-       this->_updatePositivePatternStreamView(positive);
-       this->_updateNegativePatternStreamView(negative);
+        this->_updatePositivePatternStreamView(positive);
+        this->_updateNegativePatternStreamView(negative);
+    });
+
+    connect(patternMiner, &FacePatternMiner::built_classifier, this, [=](FaceClassifier *classifier) {
+        _faceClassifier = classifier;
+        /*
+        cv::Mat test = cv::imread("./datasets/test.jpg");
+        _faceClassifier->classify(test);
+        cv::namedWindow("test1");
+        cv::imshow("test1", test);
+
+        cv::Mat test2 = cv::imread("./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm");
+        _faceClassifier->classify(test2);
+        cv::namedWindow("test2");
+        cv::imshow("test2", test2);
+
+        cv::Mat test3 = cv::imread("./datasets/test2.jpg");
+        _faceClassifier->classify(test3);
+        cv::namedWindow("test3");
+        cv::imshow("test3", test3);
+
+        cv::Mat test4 = cv::imread("./datasets/24.jpg");
+        _faceClassifier->classify(test4);
+        cv::namedWindow("test4");
+        cv::imshow("test4", test4);
+        */
     });
 
     // start the miner thread
     minerThread->start();
 
+
 }
 
 void FacialRecognition::_updateCamView(const cv::Mat& frame)
 {
-    _getCamStreamView()->setImage(Cv2Qt::cvMatToQImage(frame));
+    if(_faceClassifier != NULL) {
+        cv::Mat live(frame);
+        _faceClassifier->classify(live);
+        _getCamStreamView()->setImage(Cv2Qt::cvMatToQImage(live));
+    } else {
+        _getCamStreamView()->setImage(Cv2Qt::cvMatToQImage(frame));
+    }
 }
 
 void FacialRecognition::_updateTrainingStreamView(const cv::Mat& frame) {

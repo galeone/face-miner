@@ -30,6 +30,7 @@ private:
     VideoStreamView* _getTrainingStreamView();
     VideoStreamView* _getPositivePatternStreamView();
     VideoStreamView* _getNegativePatternStreamView();
+    FaceClassifier *_faceClassifier;
 
     void _updatePositivePatternStreamView(const cv::Mat&);
     void _updateNegativePatternStreamView(const cv::Mat&);

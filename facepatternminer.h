@@ -57,6 +57,7 @@ signals:
     void preprocessing_terminated(); // starting mining
     void mining_terminated(const cv::Mat &positiveMFI, const cv::Mat &negativeMFI); // starting training
     void training_terminated();
+    void built_classifier(FaceClassifier *classifier);
 
 public slots:
    void  start();

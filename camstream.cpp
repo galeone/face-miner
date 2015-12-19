@@ -7,7 +7,7 @@ CamStream::CamStream(const cv::VideoCapture &cam)
 
 void CamStream::start()
 {
-    std::chrono::milliseconds time(40); // Persistence Of Vision ~ 1/25
+    std::chrono::milliseconds time(1500); // Persistence Of Vision ~ 1/25
     while (true) {
         cv::Mat frame;
         _cam >> frame;

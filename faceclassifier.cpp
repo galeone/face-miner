@@ -77,8 +77,8 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
             auto exists = std::find_if(toSkip.begin(), toSkip.end(), [&](const cv::Rect &skip) {
                 /* A window overlaps the other window if the distance between
                  * the centers of both windows is less than one fifth of the window size. */
-                return (skip & roi_rect).width > _windowSize.width/5;
-                //return (skip & roi_rect).area() > 0;
+                //return (skip & roi_rect).width > _windowSize.width/5;
+                return (skip & roi_rect).area() > 0;
             });
 
             if(exists != toSkip.end()) { // intersection exists, we can skip
@@ -96,7 +96,7 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
                 std::cout << "dentro" << std::endl;
                 //cv::namedWindow(name.append("lol"));
                 //cv::imshow(name,roi);
-                cv::Rect destPos(std::round(x*factor), std::round(y*factor), winSize.width, winSize.height);
+                cv::Rect destPos(std::round(x*factor), std::round(y*factor), winSize.width+2, winSize.height+2);
                 allCandidates.push_back(destPos);
                 // add current roi to toSkip vector
                 toSkip.push_back(roi_rect);

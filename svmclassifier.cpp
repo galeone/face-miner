@@ -249,13 +249,27 @@ bool SVMClassifier::classify(cv::Mat1b &window) {
 
 void SVMClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::Mat1b> &falsePositive){
     const char *filename = "svm-trained.xml";
+
     _svm->load(filename);
     if(_svm->get_support_vector_count() > 0) { // trained model exist
         std::cout << "Using existing trained model" << std::endl;
         return;
     }
 
+
     auto positiveCount = truePositive.size(), negativeCount = falsePositive.size();
+    std::cout << "Positive n: " << positiveCount << "\nNegative n: " << negativeCount << std::endl;
+/*
+    if(positiveCount > negativeCount) {
+        truePositive.erase(truePositive.begin() + negativeCount, truePositive.end());
+        positiveCount = negativeCount;
+        std::cout << "Resized true positive to: " << positiveCount << std::endl;
+    } else if(negativeCount > positiveCount) {
+        falsePositive.erase(falsePositive.begin() + positiveCount, falsePositive.end());
+        negativeCount = positiveCount;
+        std::cout << "Resized false positive to: " << negativeCount << std::endl;
+    }
+    */
 
     cv::Mat1f labels(positiveCount + negativeCount, 1, CV_32FC1),
             samples(positiveCount + negativeCount, _featureVectorCard, CV_32FC1);
@@ -283,16 +297,16 @@ void SVMClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::
 
     // Set up SVM's parameters
     CvSVMParams params;
+    params.svm_type    = CvSVM::C_SVC;
+    params.kernel_type = CvSVM::RBF;
+    params.C = 2.5;
+    params.gamma = 1e-5;
 
-    // using default parameters
-    //params.svm_type    = CvSVM::C_SVC;
-    //params.kernel_type = CvSVM::LINEAR;
-    //params.gamma = 10;
+    params.term_crit   = cv::TermCriteria(CV_TERMCRIT_ITER, 1000, 1e-6);
 
-    //params.term_crit   = cv::TermCriteria(CV_TERMCRIT_ITER, 1000, 1e-6);
+    _svm->train(samples, labels, cv::Mat(), cv::Mat(),params);
 
-    //_svm->train(samples, labels, cv::Mat(), cv::Mat(),params);
-    _svm->train_auto(samples,labels,cv::Mat(), cv::Mat(),params);
+    //_svm->train_auto(samples,labels,cv::Mat(), cv::Mat(),params);
     _svm->save(filename);
 
     std::cout << "[T] SVM trained successfull" << std::endl;

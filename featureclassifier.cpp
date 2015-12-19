@@ -13,7 +13,7 @@ FeatureClassifier::FeatureClassifier(std::vector<cv::Point> &positiveMFICoordina
     }
 }
 
-void FeatureClassifier::setConstants(cv::Mat1b &raw, double *_c1, double *_c2, double *_c3, double *_c4) {
+void FeatureClassifier::setConstants(const cv::Mat1b &raw, double *_c1, double *_c2, double *_c3, double *_c4) {
     cv::Mat1b edge = Preprocessor::edge(raw);
     *_c1 = *_c2 = *_c3 = *_c4 = 0;
     for(const cv::Point &point : _positiveMFICoordinates) {
@@ -33,6 +33,51 @@ void FeatureClassifier::setConstants(cv::Mat1b &raw, double *_c1, double *_c2, d
         // in the edge image
         *_c4 += edge.at<uchar>(point);
     }
+}
+
+// images are just equalized
+void FeatureClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::Mat1b> &falsePositive) {
+    std::vector<double> positiveT1, negativeT1, positiveT2, negativeT2, positiveCoeff[4], negativeCoeff[4];
+    double _c1, _c2, _c3, _c4;
+
+    for(const auto raw : truePositive) {
+        setConstants(raw, &_c1, &_c2, &_c3, &_c4);
+
+        positiveT1.push_back(_c1 - _c2);
+        positiveT2.push_back(_c3 - _c4);
+
+        positiveCoeff[0].push_back(_c1 );
+        positiveCoeff[1].push_back(_c2 );
+        positiveCoeff[2].push_back(_c3 );
+        positiveCoeff[3].push_back(_c4 );
+    }
+
+    for(const auto raw : falsePositive) {
+        setConstants(raw, &_c1, &_c2, &_c3, &_c4);
+
+        negativeT1.push_back(_c1 - _c2);
+        negativeT2.push_back(_c3 - _c4);
+
+        negativeCoeff[0].push_back(_c1 );
+        negativeCoeff[1].push_back(_c2 );
+        negativeCoeff[2].push_back(_c3 );
+        negativeCoeff[3].push_back(_c4 );
+    }
+
+    _t1 = equal_error_rate(positiveT1,negativeT1).second*2.25;
+    _t2 = equal_error_rate(positiveT2,negativeT2).second/1.7;
+
+    for(auto i=0;i<4;++i) {
+        _tUpper[i] = *std::max_element(positiveCoeff[i].begin(), positiveCoeff[i].end())+255;
+        _tLower[i] = *std::min_element(positiveCoeff[i].begin(), positiveCoeff[i].end())-255;
+    }
+
+    std::cout << "T1: " << _t1 <<"\nT2: " << _t2 << "\n";
+    for(auto i=0;i<4;++i) {
+        std::cout << "T_lower{" << i << "} = " << _tLower[i] << "\n";
+        std::cout << "T_upper{" << i << "} = " << _tUpper[i] << "\n";
+    }
+    std::cout << std::endl;
 }
 
 void FeatureClassifier::train(QString positiveTrainingSet, QString negativeTrainingSet) {
