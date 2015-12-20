@@ -302,10 +302,9 @@ void SVMClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::
     params.C = 2.5;
     params.gamma = 1e-5;
 
-    params.term_crit   = cv::TermCriteria(CV_TERMCRIT_ITER, 1000, 1e-6);
+    //params.term_crit   = cv::TermCriteria(CV_TERMCRIT_ITER, 1000, 1e-6);
 
     _svm->train(samples, labels, cv::Mat(), cv::Mat(),params);
-
     //_svm->train_auto(samples,labels,cv::Mat(), cv::Mat(),params);
     _svm->save(filename);
 

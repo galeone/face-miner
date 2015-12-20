@@ -12,7 +12,7 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     qRegisterMetaType<cv::Mat>("cv::Mat");
 
     QSize streamSize(300,300);
-
+/*
     cv::VideoCapture _cam(0);
 
     if (!_cam.isOpened()) {
@@ -41,7 +41,7 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
         // start thread: stream of frames
         frameStreamThread->start();
     }
-
+*/
     // set TraingStreamView to fixed size
     _getTrainingStreamView()->setSize(streamSize);
 
@@ -79,7 +79,7 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
 
     connect(patternMiner, &FacePatternMiner::built_classifier, this, [=](FaceClassifier *classifier) {
         _faceClassifier = classifier;
-        /*
+
         cv::Mat test = cv::imread("./datasets/test.jpg");
         _faceClassifier->classify(test);
         cv::namedWindow("test1");
@@ -99,7 +99,7 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
         _faceClassifier->classify(test4);
         cv::namedWindow("test4");
         cv::imshow("test4", test4);
-        */
+
     });
 
     // start the miner thread
@@ -109,14 +109,14 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
 }
 
 void FacialRecognition::_updateCamView(const cv::Mat& frame)
-{
+{/*
     if(_faceClassifier != NULL) {
         cv::Mat live(frame);
         _faceClassifier->classify(live);
         _getCamStreamView()->setImage(Cv2Qt::cvMatToQImage(live));
-    } else {
+    } else { */
         _getCamStreamView()->setImage(Cv2Qt::cvMatToQImage(frame));
-    }
+    //}
 }
 
 void FacialRecognition::_updateTrainingStreamView(const cv::Mat& frame) {
