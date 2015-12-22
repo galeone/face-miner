@@ -29,16 +29,6 @@ VarianceClassifier::VarianceClassifier(const cv::Size windowSize) {
 
     // Right eye region
     _C = cv::Rect(cols - ac_cols, 2*topHeight, ac_cols, topHeight);
-
-    _k = 1;
-    /*T: << 3917.79
-K: 1
-True positive: 114
-True negative: 15524
-False positive: 8049
-False negatve: 358
-Precision: 0.0139655
-Recall: 0.241525*/
 }
 
 cv::Scalar VarianceClassifier::_getMForABC(cv::Mat1b &window) {
@@ -102,6 +92,7 @@ cv::Scalar VarianceClassifier::_getMForABC(cv::Mat1b &window) {
     return cv::Scalar(ma,mb,mc);
 }
 
+// Classify suppose gray and equalized window
 bool VarianceClassifier::classify(cv::Mat1b &window) {
     cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
     cv::meanStdDev(window(_D), mu_d, sigma_d);
@@ -122,36 +113,10 @@ bool VarianceClassifier::classify(cv::Mat1b &window) {
 
 // Adjust the thresholds untile the face is marked as a valid face
 // we suppose that face has the same dimension of _positiveMFI / _negativeMFI
-void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrainingSet) {
-    QDirIterator *it = new QDirIterator(positiveTrainingSet);
+void VarianceClassifier::train(std::vector<cv::Mat1b> &positive, std::vector<cv::Mat1b> &negative) {
     std::vector<double> positiveT, negativeT, positiveK, negativeK;
-    auto positiveCount = 0;
-    while(it->hasNext()) {
-        auto fileName = it->next();
-        if(!Preprocessor::validMime(fileName)) {
-            continue;
-        }
-        ++positiveCount;
-    }
 
-    auto negativeCount = 0;
-    it = new QDirIterator(negativeTrainingSet);
-    while(it->hasNext()) {
-        auto fileName = it->next();
-        if(!Preprocessor::validMime(fileName)) {
-            continue;
-        }
-        ++negativeCount;
-    }
-
-    it = new QDirIterator(positiveTrainingSet);
-    while(it->hasNext()) {
-        auto fileName = it->next();
-        if(!Preprocessor::validMime(fileName)) {
-            continue;
-        }
-
-        cv::Mat raw = cv::imread(fileName.toStdString());
+    for(const auto &raw : positive) {
         cv::Mat1b face = Preprocessor::gray(raw);
         face = Preprocessor::equalize(face);
 
@@ -163,14 +128,7 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
         positiveT.push_back(std::pow(sigma_e[0],2));
     }
 
-    it = new QDirIterator(negativeTrainingSet);
-    while(it->hasNext()) {
-        auto fileName = it->next();
-        if(!Preprocessor::validMime(fileName)) {
-            continue;
-        }
-
-        cv::Mat raw = cv::imread(fileName.toStdString());
+    for(const auto &raw : negative) {
         cv::Mat1b face = Preprocessor::gray(raw);
         face = Preprocessor::equalize(face);
 
@@ -182,10 +140,41 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
         negativeT.push_back(std::pow(sigma_e[0],2));
     }
 
-    _t = equal_error_rate(positiveT,negativeT).second/2.1;
+    _t = equal_error_rate(positiveT,negativeT).second/4;
+    _k = 4;
     std::cout << "T: << " << _t << "\nK: " << _k << std::endl;
+}
+
+void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrainingSet) {
+
+    std::vector<cv::Mat1b> positive, negative;
+
+    QDirIterator *it = new QDirIterator(positiveTrainingSet);
+    while(it->hasNext()) {
+        auto fileName = it->next();
+        if(!Preprocessor::validMime(fileName)) {
+            continue;
+        }
+
+        cv::Mat1b raw = cv::imread(fileName.toStdString());
+        positive.push_back(raw);
+    }
 
     delete it;
+
+    it = new QDirIterator(negativeTrainingSet);
+    while(it->hasNext()) {
+        auto fileName = it->next();
+        if(!Preprocessor::validMime(fileName)) {
+            continue;
+        }
+
+        cv::Mat1b raw = cv::imread(fileName.toStdString());
+        negative.push_back(raw);
+    }
+    delete it;
+
+    return train(positive, negative);
 }
 
 /*

@@ -224,9 +224,11 @@ void FacePatternMiner::_trainClassifiers() {
 
     //test, training cascade (?)
     std::cout << "\tFeatures classifier: " << std::endl;
-    _featureClassifier->train(positivesVC.first, positivesVC.second);
+    //_featureClassifier->train(positivesVC.first, positivesVC.second);
+    _featureClassifier->train(_positiveTrainSet, _negativeTrainSet);
     // test on trainset to avoid overfitting
-    auto positivesFC = Stats::test(_positiveTrainSet, _negativeTrainSet, _featureClassifier);
+    //auto positivesFC = Stats::test(_positiveTrainSet, _negativeTrainSet, _featureClassifier);
+    auto positivesFC = Stats::test(_positiveTestSet, _negativeTestSet, _featureClassifier);
 
     /*
     _featureClassifier->train(_positiveTrainSet, _negativeTrainSet);
@@ -269,7 +271,7 @@ void FacePatternMiner::_trainClassifiers() {
     _svmClassifier->train(truePositives, falsePositives);
 
     // testing on others training set (verify if there's overfitting).
-    Stats::test(_positiveTestSet, _negativeTestSet, _svmClassifier);
+    Stats::test(_positiveTrainSet, _negativeTrainSet, _svmClassifier);
 
     _faceClassifier = new FaceClassifier(_varianceClassifier, _featureClassifier, _svmClassifier, *_trainImageSize);
     emit built_classifier(_faceClassifier);

@@ -40,20 +40,24 @@ void FeatureClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<
     std::vector<double> positiveT1, negativeT1, positiveT2, negativeT2, positiveCoeff[4], negativeCoeff[4];
     double _c1, _c2, _c3, _c4;
 
-    for(const auto raw : truePositive) {
-        setConstants(raw, &_c1, &_c2, &_c3, &_c4);
+    for(const auto &raw : truePositive) {
+        cv::Mat1b face = Preprocessor::gray(raw);
+        face = Preprocessor::equalize(face);
+        setConstants(face, &_c1, &_c2, &_c3, &_c4);
 
         positiveT1.push_back(_c1 - _c2);
         positiveT2.push_back(_c3 - _c4);
 
-        positiveCoeff[0].push_back(_c1 );
-        positiveCoeff[1].push_back(_c2 );
-        positiveCoeff[2].push_back(_c3 );
-        positiveCoeff[3].push_back(_c4 );
+        positiveCoeff[0].push_back(_c1);
+        positiveCoeff[1].push_back(_c2);
+        positiveCoeff[2].push_back(_c3);
+        positiveCoeff[3].push_back(_c4);
     }
 
-    for(const auto raw : falsePositive) {
-        setConstants(raw, &_c1, &_c2, &_c3, &_c4);
+    for(const auto &raw : falsePositive) {
+        cv::Mat1b face = Preprocessor::gray(raw);
+        face = Preprocessor::equalize(face);
+        setConstants(face, &_c1, &_c2, &_c3, &_c4);
 
         negativeT1.push_back(_c1 - _c2);
         negativeT2.push_back(_c3 - _c4);
@@ -64,13 +68,24 @@ void FeatureClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<
         negativeCoeff[3].push_back(_c4 );
     }
 
-    _t1 = equal_error_rate(positiveT1,negativeT1).second*2.25;
-    _t2 = equal_error_rate(positiveT2,negativeT2).second/1.7;
+    _t1 = equal_error_rate(positiveT1,negativeT1).second*2.5;
+    _t2 = equal_error_rate(positiveT2,negativeT2).second/2.5;
 
     for(auto i=0;i<4;++i) {
-        _tUpper[i] = *std::max_element(positiveCoeff[i].begin(), positiveCoeff[i].end())+255;
-        _tLower[i] = *std::min_element(positiveCoeff[i].begin(), positiveCoeff[i].end())-255;
+        _tUpper[i] = *std::max_element(positiveCoeff[i].begin(), positiveCoeff[i].end());
+        _tLower[i] = *std::min_element(positiveCoeff[i].begin(), positiveCoeff[i].end());
     }
+    //_tUpper[0] non influisce
+    _tLower[0] -= 255*4;
+
+    _tUpper[1] += 255*5;
+    //_tLower[1] non influisce
+
+    _tUpper[2] += 255;
+    //_tLower[2] non influisce
+
+    //_tUpper[3] non influisce
+    //_tLower[3] non influisce
 
     std::cout << "T1: " << _t1 <<"\nT2: " << _t2 << "\n";
     for(auto i=0;i<4;++i) {
@@ -81,91 +96,33 @@ void FeatureClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<
 }
 
 void FeatureClassifier::train(QString positiveTrainingSet, QString negativeTrainingSet) {
-    std::vector<double> positiveT1, negativeT1, positiveT2, negativeT2, positiveCoeff[4], negativeCoeff[4];
     QDirIterator *it = new QDirIterator(positiveTrainingSet);
-    auto positiveCount = 0;
+    std::vector<cv::Mat1b> positive, negative;
     while(it->hasNext()) {
         auto fileName = it->next();
         if(!Preprocessor::validMime(fileName)) {
             continue;
         }
-        ++positiveCount;
-    }
-
-    auto negativeCount = 0;
-    it = new QDirIterator(negativeTrainingSet);
-    while(it->hasNext()) {
-        auto fileName = it->next();
-        if(!Preprocessor::validMime(fileName)) {
-            continue;
-        }
-        ++negativeCount;
-    }
-
-    double _c1, _c2, _c3, _c4;
-
-    it = new QDirIterator(positiveTrainingSet);
-    while(it->hasNext()) {
-        auto fileName = it->next();
-        if(!Preprocessor::validMime(fileName)) {
-            continue;
-        }
-
         cv::Mat1b raw = cv::imread(fileName.toStdString());
-        raw = Preprocessor::gray(raw);
-        raw = Preprocessor::equalize(raw);
-        setConstants(raw, &_c1, &_c2, &_c3, &_c4);
-
-        positiveT1.push_back(_c1 - _c2);
-        positiveT2.push_back(_c3 - _c4);
-
-        positiveCoeff[0].push_back(_c1 );
-        positiveCoeff[1].push_back(_c2 );
-        positiveCoeff[2].push_back(_c3 );
-        positiveCoeff[3].push_back(_c4 );
-
+        positive.push_back(raw);
     }
-
-    it = new QDirIterator(negativeTrainingSet);
-
-    while(it->hasNext()) {
-        auto fileName = it->next();
-        if(!Preprocessor::validMime(fileName)) {
-            continue;
-        }
-
-        cv::Mat1b raw = cv::imread(fileName.toStdString());
-        raw = Preprocessor::gray(raw);
-        raw = Preprocessor::equalize(raw);
-        setConstants(raw, &_c1, &_c2, &_c3, &_c4);
-
-        negativeT1.push_back(_c1 - _c2);
-        negativeT2.push_back(_c3 - _c4);
-
-        negativeCoeff[0].push_back(_c1 );
-        negativeCoeff[1].push_back(_c2 );
-        negativeCoeff[2].push_back(_c3 );
-        negativeCoeff[3].push_back(_c4 );
-    }
-
-    _t1 = equal_error_rate(positiveT1,negativeT1).second*2.25;
-    _t2 = equal_error_rate(positiveT2,negativeT2).second/1.7;
-
-    for(auto i=0;i<4;++i) {
-        //_tUpper[i] = (*std::max_element(positiveCoeff[i].begin(), positiveCoeff[i].end()) + *std::max_element(negativeCoeff[i].begin(), negativeCoeff[i].end())) / 2;
-        //_tLower[i] = (*std::min_element(positiveCoeff[i].begin(), positiveCoeff[i].end()) + *std::min_element(negativeCoeff[i].begin(), negativeCoeff[i].end())) / 2;
-        _tUpper[i] = *std::max_element(positiveCoeff[i].begin(), positiveCoeff[i].end())+255;
-        _tLower[i] = *std::min_element(positiveCoeff[i].begin(), positiveCoeff[i].end())-255;
-    }
-
-    std::cout << "T1: " << _t1 <<"\nT2: " << _t2 << "\n";
-    for(auto i=0;i<4;++i) {
-        std::cout << "T_lower{" << i << "} = " << _tLower[i] << "\n";
-        std::cout << "T_upper{" << i << "} = " << _tUpper[i] << "\n";
-    }
-    std::cout << std::endl;
 
     delete it;
+
+    it = new QDirIterator(negativeTrainingSet);
+    while(it->hasNext()) {
+        auto fileName = it->next();
+        if(!Preprocessor::validMime(fileName)) {
+            continue;
+        }
+
+        cv::Mat1b raw = cv::imread(fileName.toStdString());
+        negative.push_back(raw);
+    }
+
+    delete it;
+
+    return train(positive, negative);
 }
 
 // Classify suppose gray and equalized window

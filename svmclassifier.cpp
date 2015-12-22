@@ -164,11 +164,15 @@ void haar_2d ( int m, int n, double u[] )
 // thus intensities + haar like features
 void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
     coeff = cv::Mat1f(1, _featureVectorCard, CV_32FC1);
-    cv::Mat1b roi1 = window(_r1), roi2 = window(_r2);
+
+    cv::Mat1b face = Preprocessor::gray(window);
+    face = Preprocessor::equalize(face);
+
+    cv::Mat1b roi1 = face(_r1), roi2 = face(_r2);
 
     auto counter = 0;
     cv::Point pos(0,0);
-    /*
+/*
     for(auto row = 0; row < _r1.height; ++row) {
         pos.y = row;
         for(auto col=0;col<_r1.width;++col) {
@@ -186,8 +190,8 @@ void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
             ++counter;
         }
     }
-    */
 
+*/
     cv::Mat1f haar;
     cv::Mat1f roi1F, roi2F;
     roi1.convertTo(roi1F, CV_32FC1);
@@ -207,9 +211,9 @@ void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
     count = 0;
     for(auto y=0;y<n;++y) {
         for(auto x=0;x<m;++x){
-             coeff.at<float>(0, counter) = u[count];
-             ++counter;
-             ++count;
+            coeff.at<float>(0, counter) = u[count];
+            ++counter;
+            ++count;
         }
     }
 
@@ -231,7 +235,6 @@ void SVMClassifier::_getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff) {
             ++count;
         }
     }
-
 }
 
 // source must be CV1FC1
@@ -249,17 +252,17 @@ bool SVMClassifier::classify(cv::Mat1b &window) {
 
 void SVMClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::Mat1b> &falsePositive){
     const char *filename = "svm-trained.xml";
-
+    /*
     _svm->load(filename);
     if(_svm->get_support_vector_count() > 0) { // trained model exist
         std::cout << "Using existing trained model" << std::endl;
         return;
     }
-
+    */
 
     auto positiveCount = truePositive.size(), negativeCount = falsePositive.size();
     std::cout << "Positive n: " << positiveCount << "\nNegative n: " << negativeCount << std::endl;
-/*
+    /*
     if(positiveCount > negativeCount) {
         truePositive.erase(truePositive.begin() + negativeCount, truePositive.end());
         positiveCount = negativeCount;
@@ -301,6 +304,10 @@ void SVMClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::
     params.kernel_type = CvSVM::RBF;
     params.C = 2.5;
     params.gamma = 1e-5;
+    //params.coef0
+    /*cv::Mat weights = (cv::Mat1f(2,1)<< 0.2, 1.1);
+    CvMat class_weights = weights;
+    params.class_weights = &class_weights;*/
 
     //params.term_crit   = cv::TermCriteria(CV_TERMCRIT_ITER, 1000, 1e-6);
 
@@ -308,5 +315,5 @@ void SVMClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::
     //_svm->train_auto(samples,labels,cv::Mat(), cv::Mat(),params);
     _svm->save(filename);
 
-    std::cout << "[T] SVM trained successfull" << std::endl;
+    std::cout << "[!] SVM trained successfully" << std::endl;
 }

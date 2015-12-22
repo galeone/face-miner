@@ -80,21 +80,16 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
     connect(patternMiner, &FacePatternMiner::built_classifier, this, [=](FaceClassifier *classifier) {
         _faceClassifier = classifier;
 
-        cv::Mat test = cv::imread("./datasets/test.jpg");
-        _faceClassifier->classify(test);
-        cv::namedWindow("test1");
-        cv::imshow("test1", test);
-
         cv::Mat test2 = cv::imread("./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm");
         _faceClassifier->classify(test2);
         cv::namedWindow("test2");
         cv::imshow("test2", test2);
-
+/*
         cv::Mat test3 = cv::imread("./datasets/test2.jpg");
         _faceClassifier->classify(test3);
         cv::namedWindow("test3");
         cv::imshow("test3", test3);
-
+*/
         cv::Mat test4 = cv::imread("./datasets/24.jpg");
         _faceClassifier->classify(test4);
         cv::namedWindow("test4");

@@ -5,13 +5,13 @@ FaceClassifier::FaceClassifier(VarianceClassifier *vc, FeatureClassifier *fc, SV
     _fc = fc;
     _sc = svmc;
     _windowSize = size;
-    _step = 2;
+    _step = 1;
 }
 
 //Returns true if contains some faces. Hilight with a rectangle the face on the image.
 bool FaceClassifier::classify(cv::Mat &image) {
     cv::vector<cv::Rect> allCandidates;
-    float scaleFactor = 1.25;
+    float scaleFactor = 1.5;
     size_t iter_count = 0;
     cv::Mat1b gray = Preprocessor::gray(image);
     // pyramid downsampling
@@ -78,7 +78,12 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
                 /* A window overlaps the other window if the distance between
                  * the centers of both windows is less than one fifth of the window size. */
                 //return (skip & roi_rect).width > _windowSize.width/5;
-                return (skip & roi_rect).area() > 0;
+                cv::Rect intersection(skip & roi_rect);
+                if(intersection.area() > 0) {
+                    x+=intersection.width;
+                    return true;
+                }
+                return false;
             });
 
             if(exists != toSkip.end()) { // intersection exists, we can skip
@@ -94,12 +99,11 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
             //if(_vc->classify(roi) && _fc->classify(roi)) {
             if(_vc->classify(roi) && _fc->classify(roi) && _sc->classify(roi)) {
                 std::cout << "dentro" << std::endl;
-                //cv::namedWindow(name.append("lol"));
-                //cv::imshow(name,roi);
-                cv::Rect destPos(std::round(x*factor), std::round(y*factor), winSize.width+2, winSize.height+2);
+                cv::Rect destPos(std::ceil(x*factor), std::ceil(y*factor), winSize.width+2, winSize.height+2);
                 allCandidates.push_back(destPos);
                 // add current roi to toSkip vector
                 toSkip.push_back(roi_rect);
+                x+=_windowSize.height;
             }
         }
     }
