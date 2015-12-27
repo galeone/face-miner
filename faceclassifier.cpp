@@ -79,7 +79,7 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
                 //return (skip & roi_rect).width > _windowSize.width/5;
                 cv::Rect intersection(skip & roi_rect);
                 if(intersection.area() > 0) {
-                    x+=intersection.width;
+                    x+=intersection.width+1;
                     return true;
                 }
                 return false;
