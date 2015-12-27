@@ -122,7 +122,7 @@ void VarianceClassifier::train(std::vector<cv::Mat1b> &positive, std::vector<cv:
     }
 
     _t = equal_error_rate(positiveT,negativeT).second/3.5;
-    _k = 2;
+    _k = 6;
     std::cout << "T: << " << _t << "\nK: " << _k << std::endl;
 }
 

@@ -5,7 +5,7 @@ FaceClassifier::FaceClassifier(VarianceClassifier *vc, FeatureClassifier *fc, SV
     _fc = fc;
     _sc = svmc;
     _windowSize = size;
-    _scaleFactor = 1.25;
+    _scaleFactor = 1.03;
     _step = 2;
 }
 
@@ -14,6 +14,7 @@ bool FaceClassifier::classify(cv::Mat &image) {
     std::vector<cv::Rect> allCandidates;
     size_t iter_count = 0;
     cv::Mat1b gray = Preprocessor::gray(image);
+
     // pyramid downsampling
     // from smaller to bigger.
     // avoid to search where a face in a lower scale is found < image, scale factor >
@@ -48,7 +49,7 @@ bool FaceClassifier::classify(cv::Mat &image) {
         _slidingSearch(level,factor,allCandidates);
     }
 
-    //cv::groupRectangles(allCandidates, 1, 0.2);
+    //cv::groupRectangles(allCandidates, 1, 0.6);
 
     for(const cv::Rect &rect : allCandidates) {
         cv::rectangle(image,rect, cv::Scalar(255,255,0));
@@ -77,9 +78,10 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
                 /* A window overlaps the other window if the distance between
                  * the centers of both windows is less than one fifth of the window size. */
                 //return (skip & roi_rect).width > _windowSize.width/5;
+                return false;
                 cv::Rect intersection(skip & roi_rect);
                 if(intersection.area() > 0) {
-                    x+=intersection.width+1;
+                    x+= intersection.width + _step;
                     return true;
                 }
                 return false;
@@ -97,7 +99,7 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
                     if(_sc->classify(roi)) { // svm to refine
                         //std::cout << "S";
                         std::cout << "in" << std::endl;
-                        cv::Rect destPos(std::floor(x*factor), std::floor(y*factor), winSize.width, winSize.height);
+                        cv::Rect destPos(std::floor(x*factor)-3, std::floor(y*factor)-3, winSize.width+6, winSize.height+6);
                         allCandidates.push_back(destPos);
                         // add current roi to toSkip vector
                         toSkip.push_back(roi_rect);
