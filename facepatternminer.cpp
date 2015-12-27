@@ -94,7 +94,7 @@ void FacePatternMiner::_preprocess() {
                 continue;
             }
 
-            auto image = cv::imread(fileName.toStdString());
+            cv::Mat image = cv::imread(fileName.toStdString());
 
             if(_trainImageSize == NULL) {
                 _trainImageSize = new cv::Size(image.cols,image.rows);
@@ -180,18 +180,7 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile *database, float minSupport, std::vec
         coordinates.push_back(pos);
         ret.at<uchar>(pos) = 255;
     }
-    /*
-    for (int row=0;row<ret.rows;row++)
-    {
-       for (int col=0;col<ret.cols;col++)
-        {
-              if(ret.at<uchar>(row,col) == 255) {
-                  std::cout << "First white position: " << cv::Point(col, row) << std::endl;
-                  break;
-              }
-        }
-    }
-*/
+
     return ret;
 }
 
@@ -222,45 +211,15 @@ void FacePatternMiner::_trainClassifiers() {
     //.fist = true positive, .second = false positive
     auto positivesVC = Stats::test(_positiveTestSet, _negativeTestSet, _varianceClassifier);
 
-    //test, training cascade (?)
     std::cout << "\tFeatures classifier: " << std::endl;
-    //_featureClassifier->train(positivesVC.first, positivesVC.second);
     _featureClassifier->train(_positiveTrainSet, _negativeTrainSet);
-    // test on trainset to avoid overfitting
-    //auto positivesFC = Stats::test(_positiveTrainSet, _negativeTrainSet, _featureClassifier);
     auto positivesFC = Stats::test(_positiveTestSet, _negativeTestSet, _featureClassifier);
 
-    /*
-    _featureClassifier->train(_positiveTrainSet, _negativeTrainSet);
-    auto positivesFC = Stats::test(_positiveTestSet, _negativeTestSet, _featureClassifier);
-*/
     std::vector<cv::Mat1b> truePositives, falsePositives;
 
-/*
-    for(auto it = positivesVC.first.begin(); it != positivesVC.first.end();++it) {
-        for(auto it2 = positivesFC.first.begin(); it2 != positivesFC.first.end(); ++it2) {
-            if(std::equal((*it).begin(), (*it).end(), (*it2).end())) {
-                positivesVC.first.erase(it);
-                std::cout << "removed duplicated true positive" <<std::endl;
-                break;
-            }
-        }
-    }
-
-    for(auto it = positivesVC.second.begin(); it != positivesVC.second.end();++it) {
-        for(auto it2 = positivesFC.second.begin(); it2 != positivesFC.second.end(); ++it2) {
-            if(std::equal((*it).begin(), (*it).end(), (*it2).end())) {
-                positivesVC.second.erase(it);
-                std::cout << "removed duplicated false positive" <<std::endl;
-                break;
-            }
-        }
-    }
-*/
     truePositives.reserve(positivesVC.first.size() + positivesFC.first.size());
     truePositives.insert(truePositives.end(),positivesVC.first.begin(),positivesVC.first.end());
     truePositives.insert(truePositives.end(),positivesFC.first.begin(), positivesFC.first.end());
-
 
     falsePositives.reserve(positivesVC.second.size() + positivesFC.second.size());
     falsePositives.insert(falsePositives.end(), positivesVC.second.begin(), positivesVC.second.end());

@@ -17,13 +17,13 @@ public:
     bool classify(cv::Mat &);
 
 private:
-    cv::Rect _expand(cv::Rect rect, float scaleFactor);
     void _slidingSearch(cv::Mat1b &level, float factor, std::vector<cv::Rect> &allCandidates);
     VarianceClassifier *_vc;
     FeatureClassifier *_fc;
     SVMClassifier *_sc;
     cv::Size _windowSize;
     size_t _step;
+    float _scaleFactor;
 };
 
 #endif // FACECLASSIFIER_H

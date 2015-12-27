@@ -13,12 +13,11 @@ std::pair<std::vector<cv::Mat1b>, std::vector<cv::Mat1b>> Stats::test(QString _t
         }
 
         cv::Mat raw = cv::imread(fileName.toStdString());
-        cv::Mat1b face = Preprocessor::gray(raw);
-        face = Preprocessor::equalize(face);
+        cv::Mat1b gray = Preprocessor::gray(raw);
 
-        if(classifier->classify(face)) {
+        if(classifier->classify(gray)) {
             ++truePositive;
-            truePositiveVec.push_back(face);
+            truePositiveVec.push_back(gray);
         } else {
             ++falseNegative;
         }
@@ -34,12 +33,11 @@ std::pair<std::vector<cv::Mat1b>, std::vector<cv::Mat1b>> Stats::test(QString _t
         }
 
         cv::Mat raw = cv::imread(fileName.toStdString());
-        cv::Mat1b face = Preprocessor::gray(raw);
-        face = Preprocessor::equalize(face);
+        cv::Mat1b gray = Preprocessor::gray(raw);
 
-        if(classifier->classify(face)) {
+        if(classifier->classify(gray)) {
             ++falsePositive;
-            falsePositiveVec.push_back(face);
+            falsePositiveVec.push_back(gray);
         } else {
             ++trueNegative;
         }
@@ -52,11 +50,3 @@ std::pair<std::vector<cv::Mat1b>, std::vector<cv::Mat1b>> Stats::test(QString _t
 
     return std::make_pair(truePositiveVec, falsePositiveVec);
 }
-/*
- * Using existing trained model
-True positive: 65
-True negative: 23502
-False positive: 71
-False negatve: 407
-Precision: 0.477941
-Recall: 0.137712*/

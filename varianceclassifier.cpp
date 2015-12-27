@@ -31,7 +31,7 @@ VarianceClassifier::VarianceClassifier(const cv::Size windowSize) {
     _C = cv::Rect(cols - ac_cols, 2*topHeight, ac_cols, topHeight);
 }
 
-cv::Scalar VarianceClassifier::_getMForABC(cv::Mat1b &window) {
+cv::Scalar VarianceClassifier::_getMForABC(const cv::Mat1b &window) {
     cv::Scalar mu_a, mu_b, mu_c;
     cv::Mat1b roi_a = window(_A), roi_b = window(_B), roi_c = window(_C);
     mu_a = cv::mean(roi_a);
@@ -92,61 +92,41 @@ cv::Scalar VarianceClassifier::_getMForABC(cv::Mat1b &window) {
     return cv::Scalar(ma,mb,mc);
 }
 
-// Classify suppose gray and equalized window
-bool VarianceClassifier::classify(cv::Mat1b &window) {
-    cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
-    cv::meanStdDev(window(_D), mu_d, sigma_d);
-    cv::meanStdDev(window(_E), mu_e, sigma_e);
-
-    if(std::pow(sigma_d[0],2) < _t || std::pow(sigma_e[0],2) < _t) {
-        return false;
-    }
-
-    cv::Scalar helper = _getMForABC(window);
-    double ma = helper[0], mb = helper[1], mc = helper[2];
-    if(mb < _k*ma || mb < _k*mc) {
-        return false;
-    }
-    return true;
-
-}
-
 // Adjust the thresholds untile the face is marked as a valid face
 // we suppose that face has the same dimension of _positiveMFI / _negativeMFI
 void VarianceClassifier::train(std::vector<cv::Mat1b> &positive, std::vector<cv::Mat1b> &negative) {
-    std::vector<double> positiveT, negativeT, positiveK, negativeK;
+    std::vector<double> positiveT, negativeT;
+    positiveT.reserve(positive.size());
+    negativeT.reserve(negative.size());
 
     for(const auto &raw : positive) {
-        cv::Mat1b face = Preprocessor::gray(raw);
-        face = Preprocessor::equalize(face);
+        cv::Mat1b face = Preprocessor::equalize(raw);
 
         cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
         cv::meanStdDev(face(_D), mu_d, sigma_d);
         cv::meanStdDev(face(_E), mu_e, sigma_e);
 
-        positiveT.push_back(std::pow(sigma_d[0],2));
-        positiveT.push_back(std::pow(sigma_e[0],2));
+        positiveT.push_back(sigma_d[0]*sigma_d[0]);
+        positiveT.push_back(sigma_e[0]*sigma_d[0]);
     }
 
     for(const auto &raw : negative) {
-        cv::Mat1b face = Preprocessor::gray(raw);
-        face = Preprocessor::equalize(face);
+        cv::Mat1b face = Preprocessor::equalize(raw);
 
         cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
         cv::meanStdDev(face(_D), mu_d, sigma_d);
         cv::meanStdDev(face(_E), mu_e, sigma_e);
 
-        negativeT.push_back(std::pow(sigma_d[0],2));
-        negativeT.push_back(std::pow(sigma_e[0],2));
+        negativeT.push_back(sigma_d[0]*sigma_d[0]);
+        negativeT.push_back(sigma_e[0]*sigma_e[0]);
     }
 
-    _t = equal_error_rate(positiveT,negativeT).second/4;
-    _k = 4;
+    _t = equal_error_rate(positiveT,negativeT).second/3.5;
+    _k = 2;
     std::cout << "T: << " << _t << "\nK: " << _k << std::endl;
 }
 
 void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrainingSet) {
-
     std::vector<cv::Mat1b> positive, negative;
 
     QDirIterator *it = new QDirIterator(positiveTrainingSet);
@@ -156,8 +136,9 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
             continue;
         }
 
-        cv::Mat1b raw = cv::imread(fileName.toStdString());
-        positive.push_back(raw);
+        cv::Mat raw = cv::imread(fileName.toStdString());
+        cv::Mat1b gray = Preprocessor::gray(raw);
+        positive.push_back(gray);
     }
 
     delete it;
@@ -169,18 +150,30 @@ void VarianceClassifier::train(QString positiveTrainingSet, QString negativeTrai
             continue;
         }
 
-        cv::Mat1b raw = cv::imread(fileName.toStdString());
-        negative.push_back(raw);
+        cv::Mat raw = cv::imread(fileName.toStdString());
+        cv::Mat1b gray = Preprocessor::gray(raw);
+        negative.push_back(gray);
     }
     delete it;
 
     return train(positive, negative);
 }
 
-/*
-    cv::rectangle(face,_A,cv::Scalar(255,0,0));
-    cv::rectangle(face,_B,cv::Scalar(255,255,0));
-    cv::rectangle(face,_C,cv::Scalar(255,0,255));
-    cv::rectangle(face,_D,cv::Scalar(0,0,0));
-    cv::rectangle(face,_E,cv::Scalar(0,255,255));
-*/
+bool VarianceClassifier::classify(const cv::Mat1b &window) {
+    cv::Mat1b face = Preprocessor::equalize(window);
+
+    cv::Scalar mu_d, sigma_d, mu_e, sigma_e;
+    cv::meanStdDev(face(_D), mu_d, sigma_d);
+    cv::meanStdDev(face(_E), mu_e, sigma_e);
+
+    if(sigma_d[0]*sigma_d[0] < _t || sigma_e[0]*sigma_e[0] < _t) {
+        return false;
+    }
+
+    cv::Scalar helper = _getMForABC(face);
+    double ma = helper[0], mb = helper[1], mc = helper[2];
+    if(mb < _k*ma || mb < _k*mc) {
+        return false;
+    }
+    return true;
+}

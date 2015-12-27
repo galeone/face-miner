@@ -16,8 +16,8 @@ public:
     FeatureClassifier(std::vector<cv::Point> &, std::vector<cv::Point> &);
     void train(QString positiveTrainingSet, QString negativeTrainingSet);
     void train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::Mat1b> &falsePositive);
-    void setConstants(const cv::Mat1b &raw, double *_c1, double *_c2, double *_c3, double *_c4);
-    bool classify(cv::Mat1b &window);
+    void setConstants(const cv::Mat1b &gray, double *_c1, double *_c2, double *_c3, double *_c4);
+    bool classify(const cv::Mat1b &window);
 
 private:
     double _t1, _t2, _tLower[4], _tUpper[4];

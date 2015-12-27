@@ -1,0 +1,169 @@
+% citazioni dall bibliografia:
+% \textsuperscript{\cite{cas}}
+%
+% codice con linguaggio + caption:
+% \begin{lstlisting}[language=xml, caption=Richiesta per un Access Token]code\end{lstlisting}
+%
+% immagine + caption + label (utile per \ref{valore_label}
+%\begin{figure}[H]
+%\begin{center}
+%    \includegraphics [width=4in]{federa_sequenza.eps}
+%\caption{Diagramma di sequeza per Autenticazione Federata}
+%\label{autenticazioneFederata}
+%\end{center}
+%\end{figure}
+
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{wrapfig}
+\usepackage{color}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{color}
+\usepackage[a4paper]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathpazo,graphics,graphicx,amsopn,url, epsf}
+% Include the helvet package (helvetica font)
+\usepackage[scaled]{helvet}
+\usepackage[toc,page]{appendix}
+\usepackage{float}
+\usepackage[font={scriptsize,it}]{caption}
+
+% Set the default font to be sans-seriF
+\renewcommand*{\familydefault}{\sfdefault}
+
+% Change 'table of contents' -> contents -> to italian 'Indice'
+\renewcommand{\contentsname}{Indice}
+
+% Change the 'figure' caption to the italian 'figura'
+\renewcommand{\figurename}{Figura}
+
+% Add a caption to lstlisting (code)
+\renewcommand{\lstlistingname}{Codice}
+
+% Renename References to Bibliografia
+\renewcommand{\refname}{Sitografia}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{lightgray}{gray}{0.5}
+
+\lstset{frame=tb,
+    aboveskip=3mm,
+    belowskip=3mm,
+    showstringspaces=false,
+    columns=flexible,
+    basicstyle={\small\ttfamily},
+    numbers=none,
+    numberstyle=\tiny\color{lightgray},
+    keywordstyle=\color{blue},
+    commentstyle=\color{dkgreen},
+    stringstyle=\color{mauve},
+    breaklines=true,
+    breakatwhitespace=true,
+    captionpos=b,
+    tabsize=2,
+}
+
+\lstset{literate=
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+    {à}{{\`a}}1 {è}{{\'e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+    {À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+    {ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+    {Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+    {â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+    {Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+    {œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+    {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+    {€}{{\EUR}}1 {£}{{\pounds}}1
+}
+
+\sloppy
+\setlength{\parindent}{0pt}
+\setlist[itemize]{itemsep=1pt}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+        {{\large{\textsc{ALMA MATER STUDIORUM - UNIVERSITÀ DI BOLOGNA}}}}
+        \rule[0.1cm]{14cm}{0.1mm}
+        \rule[0.5cm]{14cm}{0.6mm}
+        {\textsc { SCUOLA DI INGEGNERIA E ARCHITETTURA } }\\
+        {\small{\textsc { Corso di laurea in ingegneria informatica}}}
+    \end{center}
+    \vspace*{\fill}
+    \begin{center}
+        {\Large\textbf{Face Miner\\[1\baselineskip]
+        Un approccio di Data Mining al problema della Face Detection}} \\
+    \end{center}
+    \vspace*{\fill}
+    \par
+    \noindent
+    \begin{minipage}[t]{0.47\textwidth}
+        {\large{Relazione di:}\\[1\baselineskip]
+        {\bf Paolo Galeone}}
+    \end{minipage}
+    \hfill
+%\begin{minipage}[t]{0.47\textwidth}\raggedleft
+%    {\large{Relatore:}\\[1\baselineskip]
+%    {\bf Prof. Paolo Ciaccia}}
+%\end{minipage}
+    \vspace{20mm}
+    \begin{center}
+        \rule[0.1cm]{14cm}{0.1mm}
+        \rule[0.5cm]{14cm}{0.6mm}
+        Anno Accademico 2015/2016\\
+%    Sessione II
+    \end{center}
+\end{titlepage}
+\clearpage
+\tableofcontents
+\clearpage
+
+\section{Introduzione}
+
+TODO: ultima sezione da scrivere, in cui viene spiegato brevemente in cosa consiste il lavoro. Su cosa si basa, i risultati e le modifiche.
+\clearpage
+\section{Face Detection}
+La Face Detection (Riconoscimento facciale) è un caso specifico del problema di object-class detection.
+
+Il compito della object-class detection è quello di trovare la posizione e la dimensione di tutti gli oggetti che appartengono ad una determinata classe. Nel caso della face detection, la classe è quella dei volti.
+
+Un essere umano può effettuare il task di face detection in maniera naturale a differenza di una macchina che necessità di precise informazioni e vincoli da rispettare.
+
+Tra i vari algoritmi presentati in letteratura, il più noto ed utilizzato algoritmo è il Viola-Jones framework.
+
+\subsection{Viola-Jones framework}
+L'algoritmo di Viola-Jones è il primo algoritmo con performance tali da poter essere utilizzato in applicazioni di face detectoin in real time.
+
+È un algoritmo basato sull'estrazione di determinate caratteristiche (le HAAR like features) e l'uso di tecniche di apprendimento automatico.
+
+Il framework è organizzato come segue:
+\begin{enumerate}
+ \item \textbf{Features extractor }
+\end{enumerate}
+
+
+
+
+\clearpage
+
+\clearpage
+\begin{thebibliography}{9}
+    \bibitem{ref1}
+        \emph{Sensivity and Specificity}
+        https://en.wikipedia.org/wiki/Sensitivity\_and\_specificity
+
+    \bibitem{ref2}
+        \emph{Precision and Recall}
+        https://en.wikipedia.org/wiki/Precision\_and\_recall
+
+\end{thebibliography}
+
+\end{document}
