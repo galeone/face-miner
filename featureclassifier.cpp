@@ -70,6 +70,13 @@ void FeatureClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<
         _tLower[i] = *std::min_element(positiveCoeff[i].begin(), positiveCoeff[i].end());
     }
 
+    _tUpper[0] += 255;
+    _tUpper[1] += 255;
+    _tUpper[2] += 255;
+    _tUpper[3] += 100;
+
+    _tLower[3] += 100;
+
     //_t1 = equal_error_rate(positiveT1,negativeT1).second - 255*5;
     //_t2 = equal_error_rate(positiveT2,negativeT2).second - 255*5;
     _t1 = _tLower[0] - _tUpper[1]+1300; // c1 - c2

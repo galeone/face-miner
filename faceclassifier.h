@@ -17,7 +17,7 @@ public:
     bool classify(cv::Mat &);
 
 private:
-    void _slidingSearch(cv::Mat1b &level, float factor, std::vector<cv::Rect> &allCandidates);
+    void _slidingSearch(cv::Mat1b &level, float factor, std::vector<std::pair<cv::Rect,size_t>> &allCandidates);
     VarianceClassifier *_vc;
     FeatureClassifier *_fc;
     SVMClassifier *_sc;

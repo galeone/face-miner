@@ -81,7 +81,11 @@ FacialRecognition::FacialRecognition(QWidget *parent) :
         _faceClassifier = classifier;
 
         cv::Mat test2 = cv::imread("./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm");
+        auto Start = cv::getTickCount();
         _faceClassifier->classify(test2);
+        auto End = cv::getTickCount();
+        auto seconds = (End - Start) / cv::getTickFrequency();
+        std::cout << "Time: " << seconds << std::endl;
         cv::namedWindow("test2");
         cv::imshow("test2", test2);
 /*
