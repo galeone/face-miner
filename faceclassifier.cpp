@@ -24,9 +24,10 @@ bool FaceClassifier::classify(cv::Mat &image) {
     auto windowArea = cv::Rect(0,0,19,19).area();
     std::cout << "sample area: " << windowArea << "\n";
     // we can define, with a good approximation the scale factor to obtaion the desired number of layer
-    size_t desiredLayers = 14;
+    size_t desiredLayers = 16;
     std::cout << "[!] Desider layers: " << desiredLayers << std::endl;
-    std::vector<float> factors = {1.4f, 1 + (float)std::log10(imgArea/windowArea)/desiredLayers};
+    float dynamicFactor = 1 + (float)std::log10(imgArea/windowArea)/desiredLayers;
+    std::vector<float> factors = {dynamicFactor, dynamicFactor + 0.25f};
     for(float _scaleFactor : factors) {
         std::cout << "[!] Scale factor: " << _scaleFactor << std::endl;
         // pyramid downsampling
@@ -68,7 +69,7 @@ bool FaceClassifier::classify(cv::Mat &image) {
             levelSearched.push_back(level.size());
         }
     }
-    
+
     //cv::groupRectangles(allCandidates, 1, 0.6);
     bool found = false;
     for(const std::pair<cv::Rect, size_t> &hits: allCandidates) {
@@ -77,7 +78,7 @@ bool FaceClassifier::classify(cv::Mat &image) {
             cv::rectangle(image,hits.first, cv::Scalar(255,255,0));
         }
     }
-    
+
     return found;
 }
 
@@ -86,7 +87,7 @@ bool FaceClassifier::classify(cv::Mat &image) {
 // scaled by factor (thus is compatible with level) with level
 void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<std::pair<cv::Rect, size_t>> &allCandidates) {
     cv::Size winSize(std::ceil(_windowSize.width*factor)+3, std::ceil(_windowSize.height*factor)+3);
-    
+
     std::vector<std::pair<cv::Rect, size_t>> toSkip;
     for(const std::pair<cv::Rect, size_t> &r : allCandidates) {
         toSkip.push_back(std::make_pair(
@@ -101,21 +102,21 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
                 roiCenter((roi_rect.x + roi_rect.width)/2, (roi_rect.y + roi_rect.height)/2);
         return cv::norm(skipCenter - roiCenter) < winSize.width/2;*/
     };
-    
+
     for(auto y=0; y<level.rows - _windowSize.height; y+=_step) {
         for(auto x=0; x<level.cols - _windowSize.width; x+=_step) {
             cv::Rect roi_rect(x, y, _windowSize.width, _windowSize.height);
-            
+
             // if roi_rect intersect a toSkip element, lets continue
             auto exists = std::find_if(toSkip.begin(), toSkip.end(), [&](const std::pair<cv::Rect, size_t> &skip) {
                 return intersect(roi_rect, skip);
             });
-            
+
             if(exists != toSkip.end() && exists->second > 0) { // intersection exists and ROI hitted more than once
                 x+= winSize.width + _step;
                 continue;
             }
-            
+
             cv::Mat1b roi = level(roi_rect);
             if(_vc->classify(roi)) { // variance
                 //std::cout << "V";
@@ -163,7 +164,7 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
                 }
                 //std::cout << std::endl;
             }
-            
+
         }
     }
 }
