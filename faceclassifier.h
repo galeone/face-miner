@@ -14,7 +14,7 @@ class FaceClassifier
 {
 public:
     FaceClassifier(VarianceClassifier *vc, FeatureClassifier *fc, SVMClassifier *svmc, cv::Size size);
-    bool classify(cv::Mat &);
+    std::vector<cv::Rect> classify(const cv::Mat &);
 
 private:
     void _slidingSearch(cv::Mat1b &level, float factor, std::vector<std::pair<cv::Rect,size_t>> &allCandidates);
@@ -23,7 +23,6 @@ private:
     SVMClassifier *_sc;
     cv::Size _windowSize;
     size_t _step;
-    float _scaleFactor;
 };
 
 #endif // FACECLASSIFIER_H

@@ -70,17 +70,45 @@ void FeatureClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<
         _tLower[i] = *std::min_element(positiveCoeff[i].begin(), positiveCoeff[i].end());
     }
 
-    _tUpper[0] += 255;
-    _tUpper[1] += 255;
-    _tUpper[2] += 255;
-    _tUpper[3] += 100;
+    _t1 = _tLower[0] - _tUpper[1] + 255*40; // c1 - c2
+    _t2 = _tLower[2] - _tUpper[3] + 255*6; // c3 - c4
+    _tLower[0] += 255*10;
+    _tLower[1] += 255*3;
+    _tLower[2] += 255*2;
+    _tLower[3] += 255;
 
-    _tLower[3] += 100;
+    _tUpper[0] -= 255*3;
+    _tUpper[1] -= 255;
+    _tUpper[2] -= 255*10;
+    _tUpper[3] -= 255*2;
 
-    //_t1 = equal_error_rate(positiveT1,negativeT1).second - 255*5;
-    //_t2 = equal_error_rate(positiveT2,negativeT2).second - 255*5;
-    _t1 = _tLower[0] - _tUpper[1]+1400; // c1 - c2
-    _t2 = _tLower[2] - _tUpper[3]+4800; // c3 - c4
+    /*
+
+    _tUpper[0] -= 2000;
+    //_tUpper[1] += 255;
+    //_tUpper[2] -= 255;
+    //_tUpper[3] -= 255;
+    _tLower[3] += 255;
+
+    _t1 = _tLower[0] - _tUpper[1]+10800; // c1 - c2
+    _t2 = _tLower[2] - _tUpper[3]+2700; // c3 - c4
+    */
+
+    /*
+    _t1 = _tLower[0] - _tUpper[1] +7000; // c1 - c2 > t1 &&
+    _t2 = _tLower[2] - _tUpper[3] +2000 ; // c3 - c4 > t2
+    _tLower[0] += 500;
+    _tUpper[0] -= 4000;
+
+    _tLower[1] += 500;
+    _tUpper[1] -= 1500;
+
+    _tLower[2] += 255;
+    _tUpper[2] -= 4500;
+
+    _tLower[3] += 255;
+    _tUpper[3] -= 255;
+    */
 
     std::cout << "T1: " << _t1 <<"\nT2: " << _t2 << "\n";
     for(auto i=0;i<4;++i) {

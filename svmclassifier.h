@@ -22,6 +22,7 @@ public:
 private:
     cv::Rect _r1, _r2;
     cv::Ptr<cv::ml::SVM> _svm;
+    cv::PCA _pca;
     uint32_t _featureVectorCard;
 
     void _getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff);

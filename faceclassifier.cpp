@@ -8,8 +8,8 @@ FaceClassifier::FaceClassifier(VarianceClassifier *vc, FeatureClassifier *fc, SV
     _step = 2;
 }
 
-//Returns true if contains some faces. Hilight with a rectangle the face on the image.
-bool FaceClassifier::classify(cv::Mat &image) {
+//Returns a vector of cv::Rect, 1 for every face detected
+std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat &image) {
     std::vector<std::pair<cv::Rect, size_t>> allCandidates;
     size_t iter_count = 0;
     cv::Mat1b gray = Preprocessor::gray(image);
@@ -18,22 +18,27 @@ bool FaceClassifier::classify(cv::Mat &image) {
     // a bigger image is tested a lots of times with respect to a little one.
     // lets find out a scale factor that will make the number of levels the same for every image.
 
-    std::vector<cv::Size> levelSearched;
+
     auto imgArea = cv::Rect(0,0, image.cols, image.rows).area();
     std::cout << "image area: " << imgArea << "\n";
     auto windowArea = cv::Rect(0,0,19,19).area();
     std::cout << "sample area: " << windowArea << "\n";
     // we can define, with a good approximation the scale factor to obtaion the desired number of layer
-    size_t desiredLayers = 16;
+    size_t desiredLayers = 14;
     std::cout << "[!] Desider layers: " << desiredLayers << std::endl;
     float dynamicFactor = 1 + (float)std::log10(imgArea/windowArea)/desiredLayers;
-    std::vector<float> factors = {dynamicFactor, dynamicFactor + 0.25f};
+    std::vector<float> factors = {1.25f, /*dynamicFactor, dynamicFactor + 0.25f*/};
+
+    std::vector<cv::Size> levelSearched;
+    levelSearched.reserve(desiredLayers);
+
     for(float _scaleFactor : factors) {
         std::cout << "[!] Scale factor: " << _scaleFactor << std::endl;
         // pyramid downsampling
         // from smaller to bigger.
         // avoid to search where a face in a lower scale is found < image, scale factor >
         std::vector<std::pair<cv::Mat1b, float>> pyramid;
+        pyramid.reserve(desiredLayers);
         for(float factor = 1; ; factor *=_scaleFactor) {
             ++iter_count;
             // Size of the image scaled up
@@ -51,7 +56,6 @@ bool FaceClassifier::classify(cv::Mat &image) {
             }
 
             cv::Mat1b level;
-
             cv::resize(gray,level,sz,0,0,cv::INTER_NEAREST);
             pyramid.push_back(std::pair<cv::Mat1b, float>(level, factor));
         }
@@ -70,16 +74,14 @@ bool FaceClassifier::classify(cv::Mat &image) {
         }
     }
 
-    //cv::groupRectangles(allCandidates, 1, 0.6);
-    bool found = false;
+    std::vector<cv::Rect> ret;
+    ret.reserve(allCandidates.size());
     for(const std::pair<cv::Rect, size_t> &hits: allCandidates) {
         if(hits.second > 0) {
-            found = true;
-            cv::rectangle(image,hits.first, cv::Scalar(255,255,0));
+            ret.push_back(hits.first);
         }
     }
-
-    return found;
+    return ret;
 }
 
 // allCandidates contains the previous positions, scaled to the original dimension of image of the found face
@@ -152,7 +154,7 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
                             exists->second++;
 
                             toSkip.push_back(*exists);
-                            std::cout << "Hitted " << exists->second << " times" << std::endl;
+                            std::cout << "Hitted " << exists->second << " time(s)" << std::endl;
                         } else {
                             auto pair = std::make_pair(destPos,0);
                             allCandidates.push_back(pair);
