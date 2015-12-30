@@ -44,9 +44,10 @@ std::pair<std::vector<cv::Mat1b>, std::vector<cv::Mat1b>> Stats::test(QString _t
     }
     delete it;
 
-    std::cout << "True positive: " << truePositive << "\nTrue negative: " << trueNegative << "\nFalse positive: " << falsePositive << "\nFalse negatve: " << falseNegative <<std::endl;
-    std::cout << "Precision: " << ((float)truePositive / (truePositive + falsePositive)) << std::endl;
-    std::cout << "Recall: " << ((float)truePositive / (truePositive + falseNegative)) << std::endl;
+    std::cout << "True positive: " << truePositive << "\nTrue negative: " << trueNegative << "\nFalse positive: " << falsePositive << "\nFalse negatve: " << falseNegative << "\n";
+    std::cout << "Precision: " << ((float)truePositive / (truePositive + falsePositive)) << "\n";
+    std::cout << "Recall (=positive detection rate): " << ((float)truePositive / (truePositive + falseNegative)) << "\n";
+    std::cout << "Negative detection rate: " << ((float)trueNegative / (trueNegative + falsePositive)) << std::endl;
 
     return std::make_pair(truePositiveVec, falsePositiveVec);
 }

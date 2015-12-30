@@ -5,7 +5,6 @@ FaceClassifier::FaceClassifier(VarianceClassifier *vc, FeatureClassifier *fc, SV
     _fc = fc;
     _sc = svmc;
     _windowSize = size;
-    _step = 2;
 }
 
 //Returns a vector of cv::Rect, 1 for every face detected
@@ -14,6 +13,9 @@ std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat &image) {
     size_t iter_count = 0;
     cv::Mat1b gray = Preprocessor::gray(image);
 
+    size_t desiredLayers = 14;
+    std::vector<cv::Size> levelSearched;
+    levelSearched.reserve(desiredLayers);
     // the scale should change in function of the image dimensions.
     // a bigger image is tested a lots of times with respect to a little one.
     // lets find out a scale factor that will make the number of levels the same for every image.
@@ -24,13 +26,10 @@ std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat &image) {
     auto windowArea = cv::Rect(0,0,19,19).area();
     std::cout << "sample area: " << windowArea << "\n";
     // we can define, with a good approximation the scale factor to obtaion the desired number of layer
-    size_t desiredLayers = 14;
-    std::cout << "[!] Desider layers: " << desiredLayers << std::endl;
-    float dynamicFactor = 1 + (float)std::log10(imgArea/windowArea)/desiredLayers;
+    //std::cout << "[!] Desider layers: " << desiredLayers << std::endl;
+    //float dynamicFactor = 1 + (float)std::log10(imgArea/windowArea)/desiredLayers;
     std::vector<float> factors = {1.25f, /*dynamicFactor, dynamicFactor + 0.25f*/};
 
-    std::vector<cv::Size> levelSearched;
-    levelSearched.reserve(desiredLayers);
 
     for(float _scaleFactor : factors) {
         std::cout << "[!] Scale factor: " << _scaleFactor << std::endl;
@@ -61,6 +60,9 @@ std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat &image) {
         }
 
         // from smaller to bigger, skipping level of same dimension (searched previously)
+        size_t levHalf = 1 + pyramid.size()/2, levActual = 0;
+        std::cout << "half: " << levHalf << std::endl;
+        _step = 1;
         for(auto rit = pyramid.rbegin(); rit != pyramid.rend(); rit++) {
             cv::Mat1b level = (*rit).first;
             float factor = (*rit).second;
@@ -69,6 +71,9 @@ std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat &image) {
                 continue;
             }
             std::cout << "Searching on: " << level.size() << ": " << factor << std::endl;
+            if(levActual++ > levHalf) {
+                _step = 2;
+            }
             _slidingSearch(level,factor,allCandidates);
             levelSearched.push_back(level.size());
         }
@@ -122,7 +127,8 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
             cv::Mat1b roi = level(roi_rect);
             if(_vc->classify(roi)) { // variance
                 //std::cout << "V";
-                if(_fc->classify(roi)) { // features (shape). Distance from mined pattern
+                double c1,c2,c3,c4;
+                if(_fc->classify(roi,&c1,&c2,&c3,&c4)) { // features (shape). Distance from mined pattern
                     //std::cout << "F";
                     if(_sc->classify(roi)) { // svm to refine
                         //std::cout << "S";
