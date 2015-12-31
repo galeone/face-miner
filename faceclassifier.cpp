@@ -9,7 +9,7 @@ FaceClassifier::FaceClassifier(VarianceClassifier *vc, FeatureClassifier *fc, SV
 
 //Returns a vector of cv::Rect, 1 for every face detected
 std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat &image) {
-    std::vector<std::pair<cv::Rect, size_t>> allCandidates;
+    std::vector<std::pair<cv::Rect, std::pair<size_t, std::vector<float>>>> allCandidates;
     size_t iter_count = 0;
     cv::Mat1b gray = Preprocessor::gray(image);
 
@@ -81,9 +81,15 @@ std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat &image) {
 
     std::vector<cv::Rect> ret;
     ret.reserve(allCandidates.size());
-    for(const std::pair<cv::Rect, size_t> &hits: allCandidates) {
-        if(hits.second > 0) {
+    for(const std::pair<cv::Rect, std::pair<size_t, std::vector<float>>> &hits: allCandidates) {
+        if(hits.second.first > 0) { // found on more than one scale
             ret.push_back(hits.first);
+        } else { // found only on one scale, thus analise score and decide if make it pass
+            float c1 = hits.second.second[0],
+                    c2 = hits.second.second[1],
+                    c3 = hits.second.second[2],
+                    c4 = hits.second.second[3];
+            //TODO
         }
     }
     return ret;
@@ -92,17 +98,17 @@ std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat &image) {
 // allCandidates contains the previous positions, scaled to the original dimension of image of the found face
 // thus we can exploit this thing to skip a big section of the level = the intersection of the candidates
 // scaled by factor (thus is compatible with level) with level
-void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<std::pair<cv::Rect, size_t>> &allCandidates) {
+void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<std::pair<cv::Rect, std::pair<size_t, std::vector<float>>>> &allCandidates) {
     cv::Size winSize(std::ceil(_windowSize.width*factor)+3, std::ceil(_windowSize.height*factor)+3);
 
-    std::vector<std::pair<cv::Rect, size_t>> toSkip;
-    for(const std::pair<cv::Rect, size_t> &r : allCandidates) {
+    std::vector<std::pair<cv::Rect,std::pair<size_t, std::vector<float>>>> toSkip;
+    for(const std::pair<cv::Rect, std::pair<size_t, std::vector<float>>> &r : allCandidates) {
         toSkip.push_back(std::make_pair(
                              cv::Rect(r.first.x/factor, r.first.y/factor, r.first.width/factor, r.first.height/factor),
                              r.second));
     }
 
-    auto intersect = [&](const cv::Rect &roi_rect, const std::pair<cv::Rect, size_t> &skip) {
+    auto intersect = [&](const cv::Rect &roi_rect, const std::pair<cv::Rect, std::pair<size_t, std::vector<float>>> &skip) {
         cv::Rect intersection(skip.first & roi_rect);
         return intersection.area() > 0;
         /*cv::Point skipCenter((skip.first.x + skip.first.width)/2, (skip.first.y + skip.first.height)/2),
@@ -115,11 +121,11 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
             cv::Rect roi_rect(x, y, _windowSize.width, _windowSize.height);
 
             // if roi_rect intersect a toSkip element, lets continue
-            auto exists = std::find_if(toSkip.begin(), toSkip.end(), [&](const std::pair<cv::Rect, size_t> &skip) {
+            auto exists = std::find_if(toSkip.begin(), toSkip.end(), [&](const std::pair<cv::Rect,std::pair<size_t, std::vector<float>>> &skip) {
                 return intersect(roi_rect, skip);
             });
 
-            if(exists != toSkip.end() && exists->second > 0) { // intersection exists and ROI hitted more than once
+            if(exists != toSkip.end() && exists->second.first > 0) { // intersection exists and ROI hitted more than once
                 x+= winSize.width + _step;
                 continue;
             }
@@ -127,7 +133,7 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
             cv::Mat1b roi = level(roi_rect);
             if(_vc->classify(roi)) { // variance
                 //std::cout << "V";
-                double c1,c2,c3,c4;
+                float c1,c2,c3,c4;
                 if(_fc->classify(roi,&c1,&c2,&c3,&c4)) { // features (shape). Distance from mined pattern
                     //std::cout << "F";
                     if(_sc->classify(roi)) { // svm to refine
@@ -136,7 +142,7 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
                         cv::Rect destPos(std::floor(x*factor), std::floor(y*factor), winSize.width, winSize.height);
 
                         // if roi_rect intersect a toSkip element, increment the hit counter and increase size of rect
-                        auto exists = std::find_if(allCandidates.begin(), allCandidates.end(), [&](const std::pair<cv::Rect, size_t> &skip) {
+                        auto exists = std::find_if(allCandidates.begin(), allCandidates.end(), [&](const std::pair<cv::Rect, std::pair<size_t, std::vector<float>>> &skip) {
                             return intersect(destPos, skip);
                         });
 
@@ -157,12 +163,18 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
                             }
 
                             exists->first = cv::Rect(newX, newY, newWidth, newHeight);
-                            exists->second++;
+                            exists->second.first++;
 
                             toSkip.push_back(*exists);
-                            std::cout << "Hitted " << exists->second << " time(s)" << std::endl;
+                            std::cout << "Hitted " << exists->second.first << " time(s)" << std::endl;
                         } else {
-                            auto pair = std::make_pair(destPos,0);
+                            std::vector<float> costs;
+                            costs.reserve(4);
+                            costs.push_back(c1);
+                            costs.push_back(c2);
+                            costs.push_back(c3);
+                            costs.push_back(c4);
+                            auto pair = std::make_pair(destPos,std::make_pair(0,costs));
                             allCandidates.push_back(pair);
                             // add current roi to toSkip vector
                             toSkip.push_back(pair);

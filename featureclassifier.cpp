@@ -13,7 +13,7 @@ FeatureClassifier::FeatureClassifier(std::vector<cv::Point> &positiveMFICoordina
     }
 }
 
-void FeatureClassifier::_setConstants(const cv::Mat1b &gray, double *_c1, double *_c2, double *_c3, double *_c4) {
+void FeatureClassifier::_setConstants(const cv::Mat1b &gray, float *_c1, float *_c2, float *_c3, float *_c4) {
     cv::Mat1b edge = Preprocessor::equalize(gray);
     edge = Preprocessor::edge(edge);
 
@@ -38,8 +38,8 @@ void FeatureClassifier::_setConstants(const cv::Mat1b &gray, double *_c1, double
 }
 
 void FeatureClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::Mat1b> &falsePositive) {
-    std::vector<double> positiveT1, positiveT2, positiveCoeff[4];
-    double _c1, _c2, _c3, _c4;
+    std::vector<float> positiveT1, positiveT2, positiveCoeff[4];
+    float _c1, _c2, _c3, _c4;
 
     for(const auto &gray : truePositive) {
         _setConstants(gray, &_c1, &_c2, &_c3, &_c4);
@@ -60,8 +60,8 @@ void FeatureClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<
         size_t size = positiveCoeff[i].size();
         size_t elm = size/16;
         std::cout << "No duplicates: " << size << "\n";
-        _tLower[i] = std::accumulate(positiveCoeff[i].begin(), positiveCoeff[i].begin()+elm, 0.0f)/(double)elm;
-        _tUpper[i] = std::accumulate(positiveCoeff[i].end() - elm, positiveCoeff[i].end(), 0.0f)/(double)elm;
+        _tLower[i] = std::accumulate(positiveCoeff[i].begin(), positiveCoeff[i].begin()+elm, 0.0f)/(float)elm;
+        _tUpper[i] = std::accumulate(positiveCoeff[i].end() - elm, positiveCoeff[i].end(), 0.0f)/(float)elm;
     }
 
     std::sort(positiveT1.begin(), positiveT1.end());
@@ -69,14 +69,14 @@ void FeatureClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<
     size_t size = positiveT1.size();
     std::cout << "Positive T1 size: " << size << "\n";
     size_t elm = size/12;
-    _t1 = std::accumulate(positiveT1.begin(),positiveT1.begin()+elm, 0.0f)/(double)elm;
+    _t1 = std::accumulate(positiveT1.begin(),positiveT1.begin()+elm, 0.0f)/(float)elm;
 
     std::sort(positiveT2.begin(), positiveT2.end());
     positiveT2.erase(std::unique(positiveT2.begin(), positiveT2.end()),positiveT2.end());
     size = positiveT2.size();
     std::cout << "Positive T2 size: " << size << "\n";
     elm = size/12;
-    _t2 = std::accumulate(positiveT2.begin(),positiveT2.begin()+elm, 0.0f)/(double)elm;
+    _t2 = std::accumulate(positiveT2.begin(),positiveT2.begin()+elm, 0.0f)/(float)elm;
 
     _t1 -= 255;
     _t2 -= 255;
@@ -134,7 +134,7 @@ void FeatureClassifier::train(QString positiveTrainingSet, QString negativeTrain
 }
 
 // Classify suppose a gray window
-bool FeatureClassifier::classify(const cv::Mat1b &window, double *_c1, double *_c2, double *_c3, double *_c4) {
+bool FeatureClassifier::classify(const cv::Mat1b &window, float *_c1, float *_c2, float *_c3, float *_c4) {
     _setConstants(window, _c1, _c2, _c3, _c4);
 
     return *_c1 - *_c2 > _t1
@@ -145,7 +145,7 @@ bool FeatureClassifier::classify(const cv::Mat1b &window, double *_c1, double *_
             && _tLower[3] < *_c4 && _tUpper[3] > *_c4;
 }
 bool FeatureClassifier::classify(const cv::Mat1b &window) {
-    double a,b,c,d;
+    float a,b,c,d;
     return classify(window,&a,&b,&c,&d);
 }
 
