@@ -121,8 +121,8 @@ void VarianceClassifier::train(std::vector<cv::Mat1b> &positive, std::vector<cv:
         negativeT.push_back(sigma_e[0]*sigma_e[0]);
     }
 
-    _t = equal_error_rate(positiveT,negativeT).second/3.5;
-    _k = 6;
+    _t = equal_error_rate(positiveT,negativeT).second/5;
+    _k = 9;
     std::cout << "T: << " << _t << "\nK: " << _k << std::endl;
 }
 

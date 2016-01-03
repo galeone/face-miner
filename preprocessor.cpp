@@ -17,7 +17,7 @@ cv::Mat1b Preprocessor::equalize(const cv::Mat1b &gray) {
 cv::Mat1b Preprocessor::threshold(const cv::Mat1b &grad) {
     cv::Scalar mu, sigma;
     cv::meanStdDev(grad, mu, sigma);
-    const double c = 0.89;
+    const double c = 1;
     // Scalar is a vector of quartets, we're working on grayscale thus we extract only the first channel
     double threshold = mu[0] + c * sigma[0];
     cv::Mat1b thresRes;

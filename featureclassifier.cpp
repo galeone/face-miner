@@ -80,18 +80,20 @@ void FeatureClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<
 
     _t1 -= 255;
     _t2 -= 255;
-    _tLower[0] -= 255;
-    _tUpper[0] += 250;
+    //_t1 -= 255*2;
+    //_t2 -= 255*3;
 
-    _tLower[1] -= 255;
-    _tUpper[1] += 255;
+    _tLower[0] += 255*2;
+    _tUpper[0] -= 255*2;
 
-    _tLower[2] -= 255;
+    _tLower[1] += 255;
+    _tUpper[1] -= 255;
+
+    _tLower[2] += 255;
     _tUpper[2] -= 255*2;
 
-    _tLower[3] -= 255;
-    _tUpper[3] += 255;
-
+    _tLower[3] += 255;
+    _tUpper[3] -= 255;
 
     std::cout << "T1: " << _t1 <<"\nT2: " << _t2 << "\n";
     for(auto i=0;i<4;++i) {

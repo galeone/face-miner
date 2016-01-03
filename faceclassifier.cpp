@@ -60,7 +60,7 @@ std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat &image) {
         }
 
         // from smaller to bigger, skipping level of same dimension (searched previously)
-        size_t levHalf = 1 + pyramid.size()/2, levActual = 0;
+        size_t levHalf = pyramid.size()/2, levActual = 0;
         std::cout << "half: " << levHalf << std::endl;
         _step = 1;
         for(auto rit = pyramid.rbegin(); rit != pyramid.rend(); rit++) {
@@ -81,17 +81,40 @@ std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat &image) {
 
     std::vector<cv::Rect> ret;
     ret.reserve(allCandidates.size());
+    float avg[4] = {0,0,0,0};
+    size_t count = 0;
+    // trovare il valore maximo delle costanti che hanno più di un hit e fare passare quelli single hit con valori maggiori di questi
     for(const std::pair<cv::Rect, std::pair<size_t, std::vector<float>>> &hits: allCandidates) {
+        ret.push_back(hits.first);
         if(hits.second.first > 0) { // found on more than one scale
-            ret.push_back(hits.first);
-        } else { // found only on one scale, thus analise score and decide if make it pass
-            float c1 = hits.second.second[0],
-                    c2 = hits.second.second[1],
-                    c3 = hits.second.second[2],
-                    c4 = hits.second.second[3];
-            //TODO
+            // TODO
+            for(auto i=0;i<4;++i) {
+                avg[i] += hits.second.second[i];
+            }
+            ++count;
         }
     }
+    /*
+    if(count > 0) {
+        for(auto i=0;i<4;++i) {
+            avg[i] /= count;
+            std::cout << "AVG: " << avg[i] << "\n";
+        }
+        for(const std::pair<cv::Rect, std::pair<size_t, std::vector<float>>> &hits: allCandidates) {
+            if(hits.second.first == 0) {
+                float c1 = hits.second.second[0],
+                        c2 = hits.second.second[1],
+                        c3 = hits.second.second[2],
+                        c4 = hits.second.second[3];
+                std::cout << "Compare: " << c1 << " " << c2 << " " << c3 << " " << c4 << std::endl;
+                if(c2 >= avg[1] && c3 >= avg[2]) {
+                    std::cout << "passed" << std::endl;
+                    ret.push_back(hits.first);
+                }
+            }
+        }
+    }
+    */
     return ret;
 }
 
@@ -111,9 +134,6 @@ void FaceClassifier::_slidingSearch(cv::Mat1b &level, float factor, std::vector<
     auto intersect = [&](const cv::Rect &roi_rect, const std::pair<cv::Rect, std::pair<size_t, std::vector<float>>> &skip) {
         cv::Rect intersection(skip.first & roi_rect);
         return intersection.area() > 0;
-        /*cv::Point skipCenter((skip.first.x + skip.first.width)/2, (skip.first.y + skip.first.height)/2),
-                roiCenter((roi_rect.x + roi_rect.width)/2, (roi_rect.y + roi_rect.height)/2);
-        return cv::norm(skipCenter - roiCenter) < winSize.width/2;*/
     };
 
     for(auto y=0; y<level.rows - _windowSize.height; y+=_step) {
