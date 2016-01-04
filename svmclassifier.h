@@ -22,8 +22,9 @@ public:
 private:
     cv::Rect _r1, _r2;
     cv::Ptr<cv::ml::SVM> _svm;
-    cv::PCA _pca;
+    cv::PCA *_pca;
     uint32_t _featureVectorCard;
+    int _egVectorCard;
 
     void _getFeatures(const cv::Mat1b &window, cv::Mat1f &coeff);
     void _insertLineAtPosition(const cv::Mat1f &source, cv::Mat1f &dest, uint32_t position);

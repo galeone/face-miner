@@ -68,32 +68,32 @@ void FeatureClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<
     positiveT1.erase(std::unique(positiveT1.begin(), positiveT1.end()),positiveT1.end());
     size_t size = positiveT1.size();
     std::cout << "Positive T1 size: " << size << "\n";
-    size_t elm = size/12;
+    size_t elm = size/16;
     _t1 = std::accumulate(positiveT1.begin(),positiveT1.begin()+elm, 0.0f)/(float)elm;
 
     std::sort(positiveT2.begin(), positiveT2.end());
     positiveT2.erase(std::unique(positiveT2.begin(), positiveT2.end()),positiveT2.end());
     size = positiveT2.size();
     std::cout << "Positive T2 size: " << size << "\n";
-    elm = size/12;
+    elm = size/10;
     _t2 = std::accumulate(positiveT2.begin(),positiveT2.begin()+elm, 0.0f)/(float)elm;
 
-    _t1 -= 255;
-    _t2 -= 255;
-    //_t1 -= 255*2;
-    //_t2 -= 255*3;
+    //_t1 -= 50;
 
-    _tLower[0] += 255*2;
-    _tUpper[0] -= 255*2;
+    _t2 += 100;
 
-    _tLower[1] += 255;
-    _tUpper[1] -= 255;
 
-    _tLower[2] += 255;
-    _tUpper[2] -= 255*2;
+    //_tLower[0] += 50;
+    _tUpper[0] += 1000;
 
-    _tLower[3] += 255;
-    _tUpper[3] -= 255;
+//    _tLower[1] += 255*3;
+    //_tUpper[1] -= 110;
+
+    //_tLower[2] += 255*2; // rumore
+    _tUpper[2] -= 110*2;
+
+    _tLower[3] -= 1000;
+    _tUpper[3] += 1000;
 
     std::cout << "T1: " << _t1 <<"\nT2: " << _t2 << "\n";
     for(auto i=0;i<4;++i) {

@@ -5,6 +5,7 @@ FaceClassifier::FaceClassifier(VarianceClassifier *vc, FeatureClassifier *fc, SV
     _fc = fc;
     _sc = svmc;
     _windowSize = size;
+    _step = 2;
 }
 
 //Returns a vector of cv::Rect, 1 for every face detected
@@ -60,9 +61,6 @@ std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat &image) {
         }
 
         // from smaller to bigger, skipping level of same dimension (searched previously)
-        size_t levHalf = pyramid.size()/2, levActual = 0;
-        std::cout << "half: " << levHalf << std::endl;
-        _step = 1;
         for(auto rit = pyramid.rbegin(); rit != pyramid.rend(); rit++) {
             cv::Mat1b level = (*rit).first;
             float factor = (*rit).second;
@@ -71,9 +69,6 @@ std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat &image) {
                 continue;
             }
             std::cout << "Searching on: " << level.size() << ": " << factor << std::endl;
-            if(levActual++ > levHalf) {
-                _step = 2;
-            }
             _slidingSearch(level,factor,allCandidates);
             levelSearched.push_back(level.size());
         }

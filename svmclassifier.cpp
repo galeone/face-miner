@@ -7,10 +7,11 @@ SVMClassifier::SVMClassifier(const cv::Rect &rows1, const cv::Rect &rows2) {
     _r1 = rows1;
     _r2 = rows2;
     _svm = SVM::create();
-    _pca = cv::PCA();
+    _pca = new cv::PCA();
     _featureVectorCard = _r1.width * (_r1.height + _r2.height);
     std::cout << _r1 << " " << _r2 << std::endl;
     std::cout << _featureVectorCard << " < size of feature vector" << std::endl;
+    _egVectorCard = (_featureVectorCard)/3;
 }
 
 //--------------------------------
@@ -247,7 +248,11 @@ void SVMClassifier::_insertLineAtPosition(const cv::Mat1f &source, cv::Mat1f &de
 bool SVMClassifier::classify(const cv::Mat1b &window) {
     cv::Mat1f coeff;
     _getFeatures(window, coeff);
-    return _svm->predict(coeff) > 0;
+    cv::Mat1f projectedMat(1, _egVectorCard);
+    _pca->project(coeff, projectedMat);
+
+    //return _svm->predict(coeff) > 0;
+    return _svm->predict(projectedMat) > 0;
 }
 
 void SVMClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::Mat1b> &falsePositive){
@@ -290,10 +295,20 @@ void SVMClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::
     // Set up SVM's parameters
     _svm->setType(SVM::C_SVC);
     _svm->setKernel(SVM::RBF);
-    _svm->setC(2.5);
+    _svm->setC(1.25);
     _svm->setGamma(1e-5);
 
-    cv::Ptr<TrainData> tData = TrainData::create(samples,SampleTypes::ROW_SAMPLE,labels);
+    (*_pca)(samples, cv::Mat(), CV_PCA_DATA_AS_ROW, _egVectorCard);
+    cv::Mat1f eigenValues(samples.rows, _egVectorCard);
+    // Project the samples vectors onto PCA subspace
+    for(auto i=0;i<samples.rows;i++) {
+        cv::Mat1f projectedMat(1, _egVectorCard);
+        _pca->project(samples.row(i), projectedMat);
+        _insertLineAtPosition(projectedMat,eigenValues,i);
+    }
+
+    //cv::Ptr<TrainData> tData = TrainData::create(samples,SampleTypes::ROW_SAMPLE,labels);
+    cv::Ptr<TrainData> tData = TrainData::create(eigenValues,SampleTypes::ROW_SAMPLE,labels);
     _svm->train(tData);
     _svm->save(filename);
 
