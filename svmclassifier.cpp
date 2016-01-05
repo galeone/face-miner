@@ -12,7 +12,7 @@ SVMClassifier::SVMClassifier(const cv::Rect& rows1, const cv::Rect& rows2) {
   _featureVectorCard = _r1.width * (_r1.height + _r2.height);
   std::cout << _r1 << " " << _r2 << std::endl;
   std::cout << _featureVectorCard << " < size of feature vector" << std::endl;
-  _egVectorCard = (_featureVectorCard) / 3;
+  _egVectorCard = (_featureVectorCard) / 3 - 1;
 }
 
 //--------------------------------

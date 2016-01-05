@@ -100,8 +100,8 @@ void FaceClassifier::_slidingSearch(cv::Mat1b& level,
             // std::cout << "S";
             std::cout << "in" << std::endl;
             cv::Rect destPos(std::floor(x * factor),
-                             std::floor(y * factor), winSize.width + 6,
-                             winSize.height + 6);
+                             std::floor(y * factor), winSize.width + 1,
+                             winSize.height + 1);
             allCandidates.push_back(destPos);
             // add current roi to toSkip vector
             toSkip.push_back(roi_rect);
