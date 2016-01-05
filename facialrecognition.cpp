@@ -3,14 +3,14 @@
 
 void FacialRecognition::_startCamStream() {
   cv::VideoCapture _cam(0);
-  _cam.set(CV_CAP_PROP_FRAME_WIDTH, _streamSize->width());
-  _cam.set(CV_CAP_PROP_FRAME_HEIGHT, _streamSize->height());
 
   if (!_cam.isOpened()) {
     QMessageBox error(this);
     error.critical(this, "Error", "Unable to open webcam");
     error.show();
   } else {
+    _cam.set(CV_CAP_PROP_FRAME_WIDTH, _streamSize->width());
+    _cam.set(CV_CAP_PROP_FRAME_HEIGHT, _streamSize->height());
     QThread* frameStreamThread = new QThread();
     CamStream* frameStream = new CamStream(_cam);
 
@@ -93,34 +93,26 @@ FacialRecognition::FacialRecognition(QWidget* parent)
           [=](FaceClassifier* classifier) {
             _faceClassifier = classifier;
 
-            cv::Mat test2 =
-                cv::imread("./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm");
-            auto Start = cv::getTickCount();
-            auto faces = _faceClassifier->classify(test2);
-            auto End = cv::getTickCount();
-            auto seconds = (End - Start) / cv::getTickFrequency();
-            std::cout << "Time: " << seconds << std::endl;
-            for (const auto& face : faces) {
-              cv::rectangle(test2, face, cv::Scalar(255, 255, 0));
+            auto i = 1;
+            std::vector<std::string> paths = {
+                "./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm",
+                "./datasets/test2.jpg", "./datasets/24.jpg",
+                "./datasets/AllFinal.png", "./datasets/monkey-human.jpg"};
+            for (const auto& path : paths) {
+              cv::Mat test2 = cv::imread(path);
+              auto Start = cv::getTickCount();
+              auto faces = _faceClassifier->classify(test2);
+              auto End = cv::getTickCount();
+              auto seconds = (End - Start) / cv::getTickFrequency();
+              std::cout << "Time: " << seconds << std::endl;
+              for (const auto& face : faces) {
+                cv::rectangle(test2, face, cv::Scalar(255, 255, 0));
+              }
+              std::string name = "test" + i;
+              cv::namedWindow(name);
+              cv::imshow(name, test2);
+              ++i;
             }
-            cv::namedWindow("test2");
-            cv::imshow("test2", test2);
-
-            cv::Mat test3 = cv::imread("./datasets/test2.jpg");
-            faces = _faceClassifier->classify(test3);
-            for (const auto& face : faces) {
-              cv::rectangle(test3, face, cv::Scalar(255, 255, 0));
-            }
-            cv::namedWindow("test3");
-            cv::imshow("test3", test3);
-
-            cv::Mat test4 = cv::imread("./datasets/24.jpg");
-            faces = _faceClassifier->classify(test4);
-            for (const auto& face : faces) {
-              cv::rectangle(test4, face, cv::Scalar(255, 255, 0));
-            }
-            cv::namedWindow("test4");
-            cv::imshow("test4", test4);
 
             _startCamStream();
           });
