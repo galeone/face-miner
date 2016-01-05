@@ -58,42 +58,27 @@ void FeatureClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<
         std::sort(positiveCoeff[i].begin(), positiveCoeff[i].end());
         positiveCoeff[i].erase(std::unique(positiveCoeff[i].begin(), positiveCoeff[i].end()),positiveCoeff[i].end());
         size_t size = positiveCoeff[i].size();
-        size_t elm = size/16;
+        size_t elm = size/10;
         std::cout << "No duplicates: " << size << "\n";
-        _tLower[i] = std::accumulate(positiveCoeff[i].begin(), positiveCoeff[i].begin()+elm, 0.0f)/(float)elm;
-        _tUpper[i] = std::accumulate(positiveCoeff[i].end() - elm, positiveCoeff[i].end(), 0.0f)/(float)elm;
+        _tLower[i] = std::accumulate(positiveCoeff[i].begin()+1, positiveCoeff[i].begin()+elm+1, 0.0f)/(float)elm;
+        _tUpper[i] = std::accumulate(positiveCoeff[i].end() - elm-1, positiveCoeff[i].end()-1, 0.0f)/(float)elm;
     }
 
     std::sort(positiveT1.begin(), positiveT1.end());
     positiveT1.erase(std::unique(positiveT1.begin(), positiveT1.end()),positiveT1.end());
     size_t size = positiveT1.size();
     std::cout << "Positive T1 size: " << size << "\n";
-    size_t elm = size/16;
-    _t1 = std::accumulate(positiveT1.begin(),positiveT1.begin()+elm, 0.0f)/(float)elm;
+    size_t elm = size/10;
+    _t1 = std::accumulate(positiveT1.begin()+1,positiveT1.begin()+elm+1, 0.0f)/(float)elm;
 
     std::sort(positiveT2.begin(), positiveT2.end());
-    positiveT2.erase(std::unique(positiveT2.begin(), positiveT2.end()),positiveT2.end());
+    positiveT2.erase(std::unique(positiveT2.begin()+1, positiveT2.end()+1),positiveT2.end());
     size = positiveT2.size();
     std::cout << "Positive T2 size: " << size << "\n";
     elm = size/10;
-    _t2 = std::accumulate(positiveT2.begin(),positiveT2.begin()+elm, 0.0f)/(float)elm;
+    _t2 = std::accumulate(positiveT2.begin()+1,positiveT2.begin()+elm+1, 0.0f)/(float)elm;
 
-    //_t1 -= 50;
-
-    _t2 += 100;
-
-
-    //_tLower[0] += 50;
-    _tUpper[0] += 1000;
-
-//    _tLower[1] += 255*3;
-    //_tUpper[1] -= 110;
-
-    //_tLower[2] += 255*2; // rumore
-    _tUpper[2] -= 110*2;
-
-    _tLower[3] -= 1000;
-    _tUpper[3] += 1000;
+    _tUpper[3] -= 650;
 
     std::cout << "T1: " << _t1 <<"\nT2: " << _t2 << "\n";
     for(auto i=0;i<4;++i) {

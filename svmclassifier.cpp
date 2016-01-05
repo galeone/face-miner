@@ -295,7 +295,7 @@ void SVMClassifier::train(std::vector<cv::Mat1b> &truePositive, std::vector<cv::
     // Set up SVM's parameters
     _svm->setType(SVM::C_SVC);
     _svm->setKernel(SVM::RBF);
-    _svm->setC(1.25);
+    _svm->setC(0.55);
     _svm->setGamma(1e-5);
 
     (*_pca)(samples, cv::Mat(), CV_PCA_DATA_AS_ROW, _egVectorCard);
