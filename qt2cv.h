@@ -4,10 +4,9 @@
 #include <opencv2/core.hpp>
 #include <QPoint>
 
-class Qt2Cv
-{
-public:
-    static cv::Point qpointToCvPoint(const QPoint& point);
+class Qt2Cv {
+ public:
+  static cv::Point qpointToCvPoint(const QPoint& point);
 };
 
-#endif // QT2CV_H
+#endif  // QT2CV_H

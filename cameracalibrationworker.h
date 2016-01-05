@@ -3,18 +3,17 @@
 
 #include <QObject>
 
-class CameraCalibrationWorker : public QObject
-{
-    Q_OBJECT
+class CameraCalibrationWorker : public QObject {
+  Q_OBJECT
 
-public:
-    explicit CameraCalibrationWorker(QObject *parent = 0);
+ public:
+  explicit CameraCalibrationWorker(QObject* parent = 0);
 
-signals:
-    void finished();
+ signals:
+  void finished();
 
-public slots:
-    void calibrate();
+ public slots:
+  void calibrate();
 };
 
-#endif // CAMERACALIBRATIONWORKER_H
+#endif  // CAMERACALIBRATIONWORKER_H

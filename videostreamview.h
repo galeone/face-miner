@@ -8,26 +8,23 @@
 #include "qt2cv.h"
 #include <iostream>
 
-class VideoStreamView : public QLabel
-{
-    Q_OBJECT
+class VideoStreamView : public QLabel {
+  Q_OBJECT
 
-public:
-    explicit VideoStreamView(QWidget *parent = 0) : QLabel(parent) {}
-    void setSize(const QSize &size);
-    void setImage(const QImage &image);
+ public:
+  explicit VideoStreamView(QWidget* parent = 0) : QLabel(parent) {}
+  void setSize(const QSize& size);
+  void setImage(const QImage& image);
 
-signals:
-    void clicked(const cv::Point &position);
+ signals:
+  void clicked(const cv::Point& position);
 
+ protected:
+  virtual void keyPressEvent(QKeyEvent* ev);
+  virtual void mousePressEvent(QMouseEvent* ev);
 
-protected:
-    virtual void keyPressEvent(QKeyEvent* ev);
-    virtual void mousePressEvent(QMouseEvent* ev);
-
-private:
-    QSize _size;
-
+ private:
+  QSize _size;
 };
 
-#endif // VideoStreamView_H
+#endif  // VideoStreamView_H
