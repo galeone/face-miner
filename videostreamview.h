@@ -15,6 +15,7 @@ class VideoStreamView : public QLabel {
   explicit VideoStreamView(QWidget* parent = 0) : QLabel(parent) {}
   void setSize(const QSize& size);
   void setImage(const QImage& image);
+  cv::Mat getImage();
 
  signals:
   void clicked(const cv::Point& position);

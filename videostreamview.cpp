@@ -20,3 +20,7 @@ void VideoStreamView::setImage(const QImage& image) {
   auto pixmap = QPixmap::fromImage(scaled);
   QLabel::setPixmap(pixmap);
 }
+
+cv::Mat VideoStreamView::getImage() {
+    return Qt2Cv::QPixmapToCvMat(*(this->pixmap()));
+}

@@ -4,6 +4,13 @@
 void FacialRecognition::_startCamStream() {
   cv::VideoCapture _cam(0);
 
+  _frameCount = 0;
+
+  // Register std::vector<std::pair<cv::Rect,cv::Mat1b> >& thus it can be used
+  // in signals and slots
+  qRegisterMetaType<std::vector<std::pair<cv::Rect, cv::Mat1b>>>(
+      "std::vector<std::pair<cv::Rect,cv::Mat1b>>");
+
   if (!_cam.isOpened()) {
     QMessageBox error(this);
     error.critical(this, "Error", "Unable to open webcam");
@@ -12,19 +19,39 @@ void FacialRecognition::_startCamStream() {
     _cam.set(CV_CAP_PROP_FRAME_WIDTH, _streamSize->width());
     _cam.set(CV_CAP_PROP_FRAME_HEIGHT, _streamSize->height());
     QThread* frameStreamThread = new QThread();
-    CamStream* frameStream = new CamStream(_cam);
+    _frameStream = new CamStream(_cam);
 
     // Move the object frameStream to his own thread
-    frameStream->moveToThread(frameStreamThread);
+    _frameStream->moveToThread(frameStreamThread);
 
-    // sending CamStream::newFrame output, into FacialRecognition::updateCamView
-    // input
-    connect(frameStream, &CamStream::newFrame, this,
-            &FacialRecognition::_updateCamView);
+    // _updateCamView is the default visualizer until some faces are found.
+    // when a face is found, that signal is disconnected and _track visualizes
+    // the tacked faces
+    // every time the background worker found a different number of faces, track
+    // is reinvoked.
+    // when track loses a face picture (0 rectangles), updateCamView is resetted
+    // up as default.
 
-    // start frameStream on frameStreamThread start
-    connect(frameStreamThread, &QThread::started, frameStream,
+    // sending CamStream::newFrame output to FaceFinder::find input and to
+    // _track to display and track
+    connect(_frameStream, &CamStream::newFrame, _faceFinder,
+            [&](const cv::Mat& frame) {
+              if (_camFaces.size() == 0) {
+                _faceFinder->find(frame);
+              }
+              _track(frame);
+            });
+
+    // start _frameStream on frameStreamThread start
+    connect(frameStreamThread, &QThread::started, _frameStream,
             &CamStream::start);
+
+    connect(_faceFinder, &FaceFinder::found, this,
+            [&](std::vector<std::pair<cv::Rect, cv::Mat1b>> v) {
+              _camFaces.clear();
+              _camFaces.reserve(v.size());
+              _camFaces.insert(_camFaces.end(), v.begin(), v.end());
+            });
 
     // sending click coordinates into CamStremView to
     // FacialRecognition::_handleClick
@@ -59,7 +86,8 @@ FacialRecognition::FacialRecognition(QWidget* parent)
   QThread* minerThread = new QThread();
 
   // Create the face pattern miner
-  // TODO: make the dataset with positive and negative items selectable from the
+  // TODO: make the dataset with positive and negative items selectable from
+  // the
   // view
   FacePatternMiner* patternMiner = new FacePatternMiner(
       "./datasets/mitcbcl/train/face/", "./datasets/mitcbcl/train/non-face/",
@@ -89,45 +117,51 @@ FacialRecognition::FacialRecognition(QWidget* parent)
             this->_updateNegativePatternStreamView(negative);
           });
 
-  connect(patternMiner, &FacePatternMiner::built_classifier, this,
-          [=](FaceClassifier* classifier) {
-            _faceClassifier = classifier;
+  QThread* faceFinderThread = new QThread();
+  _faceFinder = new FaceFinder();
+  _faceFinder->moveToThread(faceFinderThread);
 
-            auto i = 1;
-            std::vector<std::string> paths = {
-                "./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm",
-                "./datasets/test2.jpg", "./datasets/24.jpg",
-                "./datasets/AllFinal.png", "./datasets/monkey-human.jpg"};
-            for (const auto& path : paths) {
-              cv::Mat test2 = cv::imread(path);
-              auto Start = cv::getTickCount();
-              auto faces = _faceClassifier->classify(test2);
-              auto End = cv::getTickCount();
-              auto seconds = (End - Start) / cv::getTickFrequency();
-              std::cout << "Time: " << seconds << std::endl;
-              for (const auto& face : faces) {
-                cv::rectangle(test2, face, cv::Scalar(255, 255, 0));
-              }
-              std::string name = "test" + std::to_string(i);
-              cv::namedWindow(name);
-              cv::imshow(name, test2);
-              ++i;
-            }
-
-            _startCamStream();
-          });
+  // passing built classifier to the face finder
+  connect(patternMiner, &FacePatternMiner::built_classifier, _faceFinder,
+          &FaceFinder::setClassifier);
 
   // start the miner thread
   minerThread->start();
+
+  // start the FaceFinder thread
+  faceFinderThread->start();
+
+  // handle faceFinder::ready signal
+  connect(_faceFinder, &FaceFinder::ready, this, [&]() {
+    auto i = 1;
+    std::vector<std::string> paths = {
+        "./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm",
+        "./datasets/test2.jpg", "./datasets/24.jpg", "./datasets/AllFinal.png",
+        "./datasets/monkey-human.jpg"};
+    // sync execution
+    for (const auto& path : paths) {
+      cv::Mat test = cv::imread(path);
+      auto Start = cv::getTickCount();
+      auto faces = _faceFinder->find(test);
+      auto End = cv::getTickCount();
+      auto seconds = (End - Start) / cv::getTickFrequency();
+      std::cout << "Time: " << seconds << std::endl;
+      for (const auto& face : faces) {
+        cv::rectangle(test, face.first, cv::Scalar(255, 255, 0));
+      }
+      std::string name = "test" + std::to_string(i);
+      cv::namedWindow(name);
+      cv::imshow(name, test);
+      ++i;
+    }
+
+    _startCamStream();
+  });
 }
 
-/**
- * Perform template matching to search the user's face in the given image.
- * Updates rectangles
- * @param   im    The source image
- */
-void FacialRecognition::_track(const cv::Mat& im) {
-  cv::Mat1b grayFrame = Preprocessor::gray(im);
+void FacialRecognition::_track(const cv::Mat& frame) {
+  cv::Mat1b grayFrame = Preprocessor::gray(frame);
+  bool noneTracked = true;
   for (auto& pair : _camFaces) {
     cv::Mat1f dst;
     cv::matchTemplate(grayFrame, pair.second, dst, CV_TM_SQDIFF_NORMED);
@@ -139,38 +173,29 @@ void FacialRecognition::_track(const cv::Mat& im) {
     if (minval <= 0.2) {
       pair.first.x = minloc.x;
       pair.first.y = minloc.y;
+      noneTracked = false;
     } else {
       pair.first.x = pair.first.y = pair.first.width = pair.first.height = 0;
-      _camFaces.clear();
     }
+  }
+  // if tracking fails, updateCamView re-become the default vievew thus
+  // disconnect _track and reconnect updateCamView
+  if (noneTracked) {
+    _camFaces.clear();
+    _updateCamView(frame);
+  } else {
+    cv::Mat frame2;
+    frame.copyTo(frame2);
+
+    for (const auto& pair : _camFaces) {
+      cv::rectangle(frame2, pair.first, cv::Scalar(255, 255, 0));
+    }
+    _updateCamView(frame2);
   }
 }
 
 void FacialRecognition::_updateCamView(const cv::Mat& frame) {
-  if (_camFaces.size() == 0) {
-    auto faces = _faceClassifier->classify(frame);
-    if (faces.size() > 0) {
-      _camFaces.reserve(faces.size());
-      for (const auto& faceRect : faces) {
-        cv::Mat1b grayFrame = Preprocessor::gray(frame);
-        cv::Mat1b faceTpl = Preprocessor::equalize(grayFrame(faceRect));
-        _camFaces.push_back(std::make_pair(faceRect, faceTpl));
-      }
-    }
-  }
-
-  if (_camFaces.size() > 0) {
-    _track(frame);
-  }
-
-  cv::Mat frame2;
-  frame.copyTo(frame2);
-
-  for (const auto& pair : _camFaces) {
-    cv::rectangle(frame2, pair.first, cv::Scalar(255, 255, 0));
-  }
-
-  _getCamStreamView()->setImage(Cv2Qt::cvMatToQImage(frame2));
+  _getCamStreamView()->setImage(Cv2Qt::cvMatToQImage(frame));
 }
 
 void FacialRecognition::_updateTrainingStreamView(const cv::Mat& frame) {

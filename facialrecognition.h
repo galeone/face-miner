@@ -5,11 +5,13 @@
 #include <QMessageBox>
 #include <QThread>
 #include <QMimeData>
+#include <QMetaObject>
 #include "camstream.h"
 #include "videostreamview.h"
 #include "cv2qt.h"
 #include "facepatternminer.h"
 #include "preprocessor.h"
+#include "facefinder.h"
 #include <opencv2/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
@@ -30,19 +32,22 @@ class FacialRecognition : public QMainWindow {
   VideoStreamView* _getTrainingStreamView();
   VideoStreamView* _getPositivePatternStreamView();
   VideoStreamView* _getNegativePatternStreamView();
-  FaceClassifier* _faceClassifier;
-  std::vector<std::pair<cv::Rect, cv::Mat1b>> _camFaces;
   QSize* _streamSize;
+  QMetaObject::Connection _trackerConnection;
+  FaceFinder *_faceFinder;
+  CamStream *_frameStream;
+  std::vector<std::pair<cv::Rect, cv::Mat1b>> _camFaces;
+  uint32_t _frameCount;
 
   void _updatePositivePatternStreamView(const cv::Mat&);
   void _updateNegativePatternStreamView(const cv::Mat&);
-  void _track(const cv::Mat& im);
   void _startCamStream();
 
  private slots:
   void _updateCamView(const cv::Mat&);
   void _updateTrainingStreamView(const cv::Mat&);
   void _handleClick(const cv::Point&);
+  void _track(const cv::Mat& im);
 };
 
 #endif  // FACIALRECOGNITION_H
