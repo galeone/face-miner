@@ -108,7 +108,7 @@ FacialRecognition::FacialRecognition(QWidget* parent)
               for (const auto& face : faces) {
                 cv::rectangle(test2, face, cv::Scalar(255, 255, 0));
               }
-              std::string name = "test" + i;
+              std::string name = "test" + std::to_string(i);
               cv::namedWindow(name);
               cv::imshow(name, test2);
               ++i;

@@ -10,9 +10,10 @@ SVMClassifier::SVMClassifier(const cv::Rect& rows1, const cv::Rect& rows2) {
   _svm = SVM::create();
   _pca = new cv::PCA();
   _featureVectorCard = _r1.width * (_r1.height + _r2.height);
+  _egVectorCard = std::floor(_featureVectorCard / 3) - 2;
   std::cout << _r1 << " " << _r2 << std::endl;
   std::cout << _featureVectorCard << " < size of feature vector" << std::endl;
-  _egVectorCard = (_featureVectorCard) / 3 - 1;
+  std::cout << _egVectorCard << " < size of eigen vector" << std::endl;
 }
 
 //--------------------------------
@@ -297,7 +298,7 @@ void SVMClassifier::train(std::vector<cv::Mat1b>& truePositive,
   // Set up SVM's parameters
   _svm->setType(SVM::C_SVC);
   _svm->setKernel(SVM::RBF);
-  _svm->setC(0.6);
+  _svm->setC(0.67);
   _svm->setGamma(1e-5);
 
   (*_pca)(samples, cv::Mat(), CV_PCA_DATA_AS_ROW, _egVectorCard);
@@ -309,8 +310,6 @@ void SVMClassifier::train(std::vector<cv::Mat1b>& truePositive,
     _insertLineAtPosition(projectedMat, eigenValues, i);
   }
 
-  // cv::Ptr<TrainData> tData =
-  // TrainData::create(samples,SampleTypes::ROW_SAMPLE,labels);
   cv::Ptr<TrainData> tData =
       TrainData::create(eigenValues, SampleTypes::ROW_SAMPLE, labels);
   _svm->train(tData);
