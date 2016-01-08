@@ -2,7 +2,7 @@
 #include "ui_facialrecognition.h"
 
 void FacialRecognition::_startCamStream() {
-  cv::VideoCapture _cam(0);
+  cv::VideoCapture _cam(1);
 
   _frameCount = 0;
 
@@ -16,8 +16,14 @@ void FacialRecognition::_startCamStream() {
     error.critical(this, "Error", "Unable to open webcam");
     error.show();
   } else {
-    _cam.set(CV_CAP_PROP_FRAME_WIDTH, _streamSize->width());
-    _cam.set(CV_CAP_PROP_FRAME_HEIGHT, _streamSize->height());
+    std::cout << "Device resolution: " << _cam.get(CV_CAP_PROP_FRAME_WIDTH)
+              << "x" << _cam.get(CV_CAP_PROP_FRAME_HEIGHT) << std::endl;
+    // could fail if the device is not properly supported by opencs
+    if (!_cam.set(CV_CAP_PROP_FRAME_WIDTH, _streamSize->width()) ||
+        !_cam.set(CV_CAP_PROP_FRAME_HEIGHT, _streamSize->height())) {
+      std::cerr << "Unable to set width&height to webcam frames" << std::endl;
+    }
+
     QThread* frameStreamThread = new QThread();
     _frameStream = new CamStream(_cam);
 
@@ -36,9 +42,13 @@ void FacialRecognition::_startCamStream() {
     // _track to display and track
     connect(_frameStream, &CamStream::newFrame, _faceFinder,
             [&](const cv::Mat& frame) {
-              if (_camFaces.size() == 0) {
+              if (_camFaces.size() == 0 &&
+                  (_frameCount >= 50 || _frameCount == 0)) {
+                cv::Mat frame2;
                 _faceFinder->find(frame);
+                _frameCount = 1;
               }
+              _frameCount++;
               _track(frame);
             });
 
@@ -154,7 +164,6 @@ FacialRecognition::FacialRecognition(QWidget* parent)
       cv::imshow(name, test);
       ++i;
     }
-
     _startCamStream();
   });
 }
@@ -188,7 +197,7 @@ void FacialRecognition::_track(const cv::Mat& frame) {
     frame.copyTo(frame2);
 
     for (const auto& pair : _camFaces) {
-      cv::rectangle(frame2, pair.first, cv::Scalar(255, 255, 0));
+      cv::rectangle(frame2, pair.first, cv::Scalar(255, 255, 0), 2);
     }
     _updateCamView(frame2);
   }
