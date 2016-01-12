@@ -2,7 +2,7 @@
 #include "ui_facialrecognition.h"
 
 void FacialRecognition::_startCamStream() {
-  cv::VideoCapture _cam(1);
+  cv::VideoCapture _cam(0);
 
   _frameCount = 0;
 
@@ -146,16 +146,21 @@ FacialRecognition::FacialRecognition(QWidget* parent)
     auto i = 1;
     std::vector<std::string> paths = {
         "./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm",
-        "./datasets/test2.jpg", "./datasets/24.jpg", "./datasets/AllFinal.png",
-        "./datasets/monkey-human.jpg"};
+        "./datasets/test2.jpg",
+        "./datasets/24.jpg",
+        "./datasets/AllFinal.png",
+        "./datasets/monkey-human.jpg",
+        "./datasets/faces.pgm"};
     // sync execution
     for (const auto& path : paths) {
+      std::cout << path << ": ";
       cv::Mat test = cv::imread(path);
       auto Start = cv::getTickCount();
       auto faces = _faceFinder->find(test);
       auto End = cv::getTickCount();
       auto seconds = (End - Start) / cv::getTickFrequency();
-      std::cout << "Time: " << seconds << std::endl;
+      std::cout << "Time: " << seconds << "s (" << faces.size() << ") "
+                << test.size() << std::endl;
       for (const auto& face : faces) {
         cv::rectangle(test, face.first, cv::Scalar(255, 255, 0));
       }
@@ -164,7 +169,7 @@ FacialRecognition::FacialRecognition(QWidget* parent)
       cv::imshow(name, test);
       ++i;
     }
-    _startCamStream();
+    //_startCamStream();
   });
 }
 

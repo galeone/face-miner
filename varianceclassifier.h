@@ -4,6 +4,7 @@
 #include "iclassifier.h"
 #include "preprocessor.h"
 #include "stats.h"
+#include "integralimage.h"
 #include <iostream>
 #include <fstream>
 #include <QString>
@@ -17,12 +18,15 @@ class VarianceClassifier : public IClassifier {
   void train(QString positiveTrainingSet, QString negativeTrainingSet);
   void train(std::vector<cv::Mat1b>& positive,
              std::vector<cv::Mat1b>& negative);
-  cv::Scalar _getMForABC(const cv::Mat1b& window);
+  void _getMForABC(const cv::Mat1b& window,
+                   IntegralImage& ii,
+                   float* ma,
+                   float* mb,
+                   float* mc);
 
  private:
   cv::Rect _A, _B, _C, _D, _E;
-  float _t;
-  float _k;
+  float _t, _k;
 };
 
 #endif  // VARIANCECLASSIFIER_H

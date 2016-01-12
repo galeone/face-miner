@@ -95,13 +95,14 @@ void FeatureClassifier::train(std::vector<cv::Mat1b>& truePositive,
                         0.0f) /
         elm;
 
-  _tUpper[1] += 100;
-  _tLower[1] -= 100;
+  //_tUpper[1] += 100;
+  //_tLower[1] -= 100;
 
-  _tLower[2] -= 100;
+  //_tLower[2] -= 100;
 
-  _tLower[3] -= 100;
-  _tUpper[3] += 400;
+  //_tLower[3] -= 100;
+  _tUpper[3] += 350;
+  _t2 -= 10;
 
   std::cout << "T1: " << _t1 << "\nT2: " << _t2 << "\n";
   for (auto i = 0; i < 4; ++i) {
@@ -152,10 +153,10 @@ bool FeatureClassifier::classify(const cv::Mat1b& window,
                                  int32_t* _c4) {
   _setConstants(window, _c1, _c2, _c3, _c4);
 
-  return *_c1 - *_c2 > _t1 && *_c3 - *_c4 > _t2 && _tLower[0] < *_c1 &&
-         _tUpper[0] > *_c1 && _tLower[1] < *_c2 && _tUpper[1] > *_c2 &&
-         _tLower[2] < *_c3 && _tUpper[2] > *_c3 && _tLower[3] < *_c4 &&
-         _tUpper[3] > *_c4;
+  return *_c1 - *_c2 >= _t1 && *_c3 - *_c4 >= _t2 && _tLower[0] <= *_c1 &&
+         _tUpper[0] >= *_c1 && _tLower[1] <= *_c2 && _tUpper[1] >= *_c2 &&
+         _tLower[2] <= *_c3 && _tUpper[2] >= *_c3 && _tLower[3] <= *_c4 &&
+         _tUpper[3] >= *_c4;
 }
 bool FeatureClassifier::classify(const cv::Mat1b& window) {
   int32_t a, b, c, d;

@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     faceclassifier.cpp \
     preprocessor.cpp \
     stats.cpp \
-    facefinder.cpp
+    facefinder.cpp \
+    integralimage.cpp
 
 HEADERS  += facialrecognition.h \
     cameracalibrationworker.h \
@@ -47,7 +48,8 @@ HEADERS  += facialrecognition.h \
     faceclassifier.h \
     preprocessor.h \
     stats.h \
-    facefinder.h
+    facefinder.h \
+    integralimage.h
 
 FORMS    += facialrecognition.ui
 

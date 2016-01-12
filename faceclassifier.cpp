@@ -46,8 +46,6 @@ std::vector<cv::Rect> FaceClassifier::classify(const cv::Mat& image) {
   for (auto rit = pyramid.rbegin(); rit != pyramid.rend(); rit++) {
     cv::Mat1b level = (*rit).first;
     float factor = (*rit).second;
-    std::cout << "Searching on: " << level.size() << ": " << factor
-              << std::endl;
     _slidingSearch(level, factor, allCandidates);
   }
 
@@ -93,12 +91,10 @@ void FaceClassifier::_slidingSearch(cv::Mat1b& level,
       cv::Mat1b roi = level(roi_rect);
       if (_vc->classify(roi)) {  // variance
         // std::cout << "V";
-        if (_fc->classify(
-                roi)) {  // features (shape). Distance from mined pattern
+        if (_fc->classify(roi)) {  // features (shape)
           // std::cout << "F";
           if (_sc->classify(roi)) {  // svm to refine
             // std::cout << "S";
-            std::cout << "in" << std::endl;
             cv::Rect destPos(std::floor(x * factor), std::floor(y * factor),
                              winSize.width + 1, winSize.height + 1);
             allCandidates.push_back(destPos);
