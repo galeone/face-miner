@@ -65,7 +65,7 @@ void FeatureClassifier::train(std::vector<cv::Mat1b>& truePositive,
         std::unique(positiveCoeff[i].begin(), positiveCoeff[i].end()),
         positiveCoeff[i].end());
     size_t size = positiveCoeff[i].size();
-    size_t elm = size / 10;
+    size_t elm = size / 9;
     std::cout << "No duplicates: " << size << "\n";
     _tLower[i] = std::accumulate(positiveCoeff[i].begin() + 1,
                                  positiveCoeff[i].begin() + elm + 1, 0.0f) /
@@ -80,7 +80,7 @@ void FeatureClassifier::train(std::vector<cv::Mat1b>& truePositive,
                    positiveT1.end());
   size_t size = positiveT1.size();
   std::cout << "Positive T1 size: " << size << "\n";
-  size_t elm = size / 10;
+  size_t elm = size / 9;
   _t1 = std::accumulate(positiveT1.begin() + 1, positiveT1.begin() + elm + 1,
                         0.0f) /
         elm;
@@ -90,19 +90,20 @@ void FeatureClassifier::train(std::vector<cv::Mat1b>& truePositive,
                    positiveT2.end());
   size = positiveT2.size();
   std::cout << "Positive T2 size: " << size << "\n";
-  elm = size / 10;
+  elm = size / 9;
   _t2 = std::accumulate(positiveT2.begin() + 1, positiveT2.begin() + elm + 1,
                         0.0f) /
         elm;
 
-  //_tUpper[1] += 100;
-  //_tLower[1] -= 100;
+  _tUpper[1] += 100;
+  _tLower[1] -= 100;
 
-  //_tLower[2] -= 100;
+  _tUpper[2] -= 100;
 
-  //_tLower[3] -= 100;
-  _tUpper[3] += 350;
-  _t2 -= 10;
+  _tLower[3] += 80;
+  _tUpper[3] += 50;
+  _t2 -= 50;
+  _t1 -= 50;
 
   std::cout << "T1: " << _t1 << "\nT2: " << _t2 << "\n";
   for (auto i = 0; i < 4; ++i) {

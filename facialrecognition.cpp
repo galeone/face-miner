@@ -18,11 +18,6 @@ void FacialRecognition::_startCamStream() {
   } else {
     std::cout << "Device resolution: " << _cam.get(CV_CAP_PROP_FRAME_WIDTH)
               << "x" << _cam.get(CV_CAP_PROP_FRAME_HEIGHT) << std::endl;
-    // could fail if the device is not properly supported by opencs
-    if (!_cam.set(CV_CAP_PROP_FRAME_WIDTH, _streamSize->width()) ||
-        !_cam.set(CV_CAP_PROP_FRAME_HEIGHT, _streamSize->height())) {
-      std::cerr << "Unable to set width&height to webcam frames" << std::endl;
-    }
 
     QThread* frameStreamThread = new QThread();
     _frameStream = new CamStream(_cam);
@@ -169,7 +164,7 @@ FacialRecognition::FacialRecognition(QWidget* parent)
       cv::imshow(name, test);
       ++i;
     }
-    //_startCamStream();
+    _startCamStream();
   });
 }
 

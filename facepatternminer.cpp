@@ -201,7 +201,7 @@ cv::Mat1b FacePatternMiner::_mineMFI(QFile* database,
 void FacePatternMiner::start() {
   _preprocess();
   emit preprocessing_terminated();
-  float positiveMinSupport = 0.7, negativeMinSupport = 0.78;
+  float positiveMinSupport = 0.7, negativeMinSupport = 0.79;
   _positiveMFI =
       _mineMFI(_positiveDB, positiveMinSupport, _positiveMFICoordinates);
   _negativeMFI =
