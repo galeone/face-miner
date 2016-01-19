@@ -9,7 +9,7 @@ class IntegralImage {
   cv::Mat _integral;  // integral image
   cv::Mat _sq_integral;  // sq integral image
   cv::Mat _image;  // original image
-  IntegralImage(const cv::Mat1b &image);
+  void setImage(const cv::Mat1b &image);
 
   // function to compute mean value of a patch
   float calcMean(const cv::Rect &r);

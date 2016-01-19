@@ -99,16 +99,17 @@ void VarianceClassifier::train(std::vector<cv::Mat1b>& positive,
   positiveT.reserve(positive.size());
   negativeT.reserve(negative.size());
 
+  IntegralImage ii;
   for (const auto& raw : positive) {
     cv::Mat1b face = Preprocessor::equalize(raw);
-    IntegralImage ii(face);
+    ii.setImage(face);
     positiveT.push_back(ii.calcVariance(_D));
     positiveT.push_back(ii.calcVariance(_E));
   }
 
   for (const auto& raw : negative) {
     cv::Mat1b face = Preprocessor::equalize(raw);
-    IntegralImage ii(face);
+    ii.setImage(face);
     negativeT.push_back(ii.calcVariance(_D));
     negativeT.push_back(ii.calcVariance(_E));
   }
@@ -154,7 +155,8 @@ void VarianceClassifier::train(QString positiveTrainingSet,
 
 bool VarianceClassifier::classify(const cv::Mat1b& window) {
   cv::Mat1b face = Preprocessor::equalize(window);
-  IntegralImage ii(window);
+  IntegralImage ii;
+  ii.setImage(window);
 
   if (ii.calcVariance(_D) < _t || ii.calcVariance(_E) < _t) {
     return false;

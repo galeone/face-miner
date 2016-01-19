@@ -1,8 +1,8 @@
 #include "integralimage.h"
 
-IntegralImage::IntegralImage(const cv::Mat1b& image) {
-  image.copyTo(_image);
-  cv::integral(_image, _integral, _sq_integral);
+void IntegralImage::setImage(const cv::Mat1b& image) {
+    image.copyTo(_image);
+    cv::integral(_image, _integral, _sq_integral);
 }
 
 float IntegralImage::calcMean(const cv::Rect& r) {
