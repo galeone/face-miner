@@ -29,7 +29,7 @@ class SVMClassifier : public IClassifier {
   void _insertLineAtPosition(const cv::Mat1f& source,
                              cv::Mat1f& dest,
                              uint32_t position);
-  static void _haarWavelet(cv::Mat src, cv::Mat& dst, int NIter);
+  static void _haar_2d(int m, int n, double u[]);
 };
 
 #endif  // SVMCLASSIFIER_H

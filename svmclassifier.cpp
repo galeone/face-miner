@@ -11,56 +11,10 @@ SVMClassifier::SVMClassifier(const cv::Rect& rows1, const cv::Rect& rows2) {
   _pca = new cv::PCA();
   _featureVectorCard = _r1.width * (_r1.height + _r2.height);
   _egVectorCard = std::floor(_featureVectorCard / 3) - 2;
-  std::cout << _r1 << " " << _r2 << std::endl;
-  std::cout << _featureVectorCard << " < size of feature vector" << std::endl;
-  std::cout << _egVectorCard << " < size of eigen vector" << std::endl;
 }
 
-//--------------------------------
-// Wavelet transform
-//--------------------------------
-void SVMClassifier::_haarWavelet(cv::Mat src, cv::Mat& dst, int NIter) {
-  float c, dh, dv, dd;
-  assert(src.type() == CV_32FC1);
-  int width = src.cols;
-  int height = src.rows;
-  dst = cv::Mat1f(src.rows, src.cols, CV_32FC1);
-
-  for (int k = 0; k < NIter; k++) {
-    for (int y = 0; y < (height >> (k + 1)); y++) {
-      for (int x = 0; x < (width >> (k + 1)); x++) {
-        c = (src.at<float>(2 * y, 2 * x) + src.at<float>(2 * y, 2 * x + 1) +
-             src.at<float>(2 * y + 1, 2 * x) +
-             src.at<float>(2 * y + 1, 2 * x + 1)) *
-            0.5;
-        dst.at<float>(y, x) = c;
-
-        dh = (src.at<float>(2 * y, 2 * x) + src.at<float>(2 * y + 1, 2 * x) -
-              src.at<float>(2 * y, 2 * x + 1) -
-              src.at<float>(2 * y + 1, 2 * x + 1)) *
-             0.5;
-        dst.at<float>(y, x + (width >> (k + 1))) = dh;
-
-        dv = (src.at<float>(2 * y, 2 * x) + src.at<float>(2 * y, 2 * x + 1) -
-              src.at<float>(2 * y + 1, 2 * x) -
-              src.at<float>(2 * y + 1, 2 * x + 1)) *
-             0.5;
-        dst.at<float>(y + (height >> (k + 1)), x) = dv;
-
-        dd = (src.at<float>(2 * y, 2 * x) - src.at<float>(2 * y, 2 * x + 1) -
-              src.at<float>(2 * y + 1, 2 * x) +
-              src.at<float>(2 * y + 1, 2 * x + 1)) *
-             0.5;
-        dst.at<float>(y + (height >> (k + 1)), x + (width >> (k + 1))) = dd;
-      }
-    }
-    dst.copyTo(src);
-  }
-}
-
-void haar_2d(int m, int n, double u[])
-
-//****************************************************************************80
+void SVMClassifier::_haar_2d(int m, int n, double u[])
+//****************************************************************************
 //
 //  Purpose:
 //
@@ -159,7 +113,6 @@ void haar_2d(int m, int n, double u[])
   delete[] v;
   return;
 }
-//****************************************************************************
 
 // _getFeatures extract every feature required in the classification
 // thus intensities + haar like features
@@ -170,32 +123,10 @@ void SVMClassifier::_getFeatures(const cv::Mat1b& window, cv::Mat1f& coeff) {
   cv::Mat1b roi1 = face(_r1), roi2 = face(_r2);
 
   auto counter = 0;
-  cv::Point pos(0, 0);
-  /*
-      for(auto row = 0; row < _r1.height; ++row) {
-          pos.y = row;
-          for(auto col=0;col<_r1.width;++col) {
-              pos.x = col;
-              coeff.at<float>(0, counter) = roi1.at<uchar>(pos);
-              ++counter;
-          }
-      }
-
-      for(auto row = 0; row < _r2.height; ++row) {
-          pos.y = row;
-          for(auto col=0;col<_r2.width;++col) {
-              pos.x = col;
-              coeff.at<float>(0, counter) = roi2.at<uchar>(pos);
-              ++counter;
-          }
-      }
-  */
-  cv::Mat1f haar;
   cv::Mat1f roi1F, roi2F;
   roi1.convertTo(roi1F, CV_32FC1);
   roi2.convertTo(roi2F, CV_32FC1);
 
-  //_haarWavelet(roi1F, haar, 2);
   int m = roi1F.cols, n = roi1F.rows;
   double u[m * n];
   auto count = 0;
@@ -205,7 +136,7 @@ void SVMClassifier::_getFeatures(const cv::Mat1b& window, cv::Mat1f& coeff) {
     }
   }
 
-  haar_2d(m, n, u);
+  _haar_2d(m, n, u);
   count = 0;
   for (auto y = 0; y < n; ++y) {
     for (auto x = 0; x < m; ++x) {
@@ -224,7 +155,7 @@ void SVMClassifier::_getFeatures(const cv::Mat1b& window, cv::Mat1f& coeff) {
     }
   }
 
-  haar_2d(m, n, v);
+  _haar_2d(m, n, v);
   count = 0;
   for (auto y = 0; y < n; ++y) {
     for (auto x = 0; x < m; ++x) {
