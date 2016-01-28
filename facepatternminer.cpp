@@ -250,14 +250,7 @@ void FacePatternMiner::_trainClassifiers() {
 
   // Training SVM on true and false positives of previous 2 classifiers
   std::cout << "\tSVM classifier: " << std::endl;
-  /*
-  _svmClassifier->train(truePositives, falsePositives);
-
-  // testing on others training set (verify if there's overfitting).
-  Stats::test(_positiveTrainSet, _negativeTrainSet, _svmClassifier);
-  */
   QDirIterator* it = new QDirIterator(_positiveTrainSet);
-  // size_t count = 0;
   while (it->hasNext()) {
     auto fileName = it->next();
     if (!Preprocessor::validMime(fileName)) {
@@ -282,8 +275,6 @@ void FacePatternMiner::_trainClassifiers() {
   }
 
   _svmClassifier->train(truePositives, falsePositives);
-  Stats::test(_positiveTestSet, _negativeTestSet, _svmClassifier);
-
   _faceClassifier = new FaceClassifier(_varianceClassifier, _featureClassifier,
                                        _svmClassifier, *_trainImageSize);
   emit built_classifier(_faceClassifier);

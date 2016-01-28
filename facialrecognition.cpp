@@ -139,32 +139,52 @@ FacialRecognition::FacialRecognition(QWidget* parent)
   // handle faceFinder::ready signal
   connect(_faceFinder, &FaceFinder::ready, this, [&]() {
     auto i = 1;
-    std::vector<std::string> paths = {
-        "./datasets/BioID-FaceDatabase-V1.2/BioID_0921.pgm",
-        "./datasets/test2.jpg",
-        "./datasets/24.jpg",
-        "./datasets/AllFinal.png",
-        "./datasets/monkey-human.jpg",
-        "./datasets/faces.pgm"};
+
+    std::vector<std::string> paths;
+    paths.reserve(1600);
+    QDirIterator* it = new QDirIterator(QString("./datasets/yalefaces/"));
+    while (it->hasNext()) {
+      auto file = it->next();
+      if (Preprocessor::validMime(file)) {
+        paths.push_back(file.toStdString());
+      }
+    }
+    double totalTime = 0;
+    size_t detectedFaces = 0;
+
     // sync execution
-    for (const auto& path : paths) {
+    for (const std::string& path : paths) {
       std::cout << path << ": ";
       cv::Mat test = cv::imread(path);
       auto Start = cv::getTickCount();
       auto faces = _faceFinder->find(test);
       auto End = cv::getTickCount();
       auto seconds = (End - Start) / cv::getTickFrequency();
+      totalTime += seconds;
+      ++i;
       std::cout << "Time: " << seconds << "s (" << faces.size() << ") "
                 << test.size() << std::endl;
       for (const auto& face : faces) {
         cv::rectangle(test, face.first, cv::Scalar(255, 255, 0));
       }
+      detectedFaces += faces.size();
+      /*
       std::string name = "test" + std::to_string(i);
       cv::namedWindow(name);
       cv::imshow(name, test);
-      ++i;
+      */
     }
-    _startCamStream();
+    std::cout << "[!] Tested using yalefaces" << std::endl;
+    std::cout << "[!] Processed " << i << " images" << std::endl;
+    std::cout << "[!] Detected " << detectedFaces << " faces" << std::endl;
+    std::cout << "[!] Average time: " << totalTime / i << std::endl;
+    /*
+    std::cout << "[!] True positive: " << tp << std::endl;
+    std::cout << "[!] True negative: " << tn << std::endl;
+    std::cout << "[!] False positive: " << fp << std::endl;
+    std::cout << "[!] False negative: " << fn << std::endl;
+    */
+    //_startCamStream();
   });
 }
 
