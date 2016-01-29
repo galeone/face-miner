@@ -168,15 +168,15 @@ FacialRecognition::FacialRecognition(QWidget* parent)
         cv::rectangle(test, face.first, cv::Scalar(255, 255, 0));
       }
       detectedFaces += faces.size();
-      /*
       std::string name = "test" + std::to_string(i);
       cv::namedWindow(name);
       cv::imshow(name, test);
-      */
+
     }
-    std::cout << "[!] Tested using yalefaces" << std::endl;
-    std::cout << "[!] Processed " << i << " images" << std::endl;
-    std::cout << "[!] Detected " << detectedFaces << " faces" << std::endl;
+    std::cout << "[!] Tested using yalefaces\n";
+    std::cout << "[!] Processed " << i << " images\n";
+    std::cout << "[!] Detected " << detectedFaces << " faces\n";
+    std::cout << "[!] Elapsed time: " << totalTime << "\n";
     std::cout << "[!] Average time: " << totalTime / i << std::endl;
     /*
     std::cout << "[!] True positive: " << tp << std::endl;

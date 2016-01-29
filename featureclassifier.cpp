@@ -100,9 +100,9 @@ void FeatureClassifier::train(std::vector<cv::Mat1b>& truePositive,
 
 //  _tUpper[2] -= 100;
 
-//  _tLower[3] += 80;
-  _tUpper[3] += 50;
-  _t2 -= 50;
+  _tLower[3] -= 100;
+  _tUpper[3] += 100;
+  _t2 -= 100;
   _t1 -= 50;
 
   std::cout << "T1: " << _t1 << "\nT2: " << _t2 << "\n";
