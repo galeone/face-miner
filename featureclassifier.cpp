@@ -95,15 +95,19 @@ void FeatureClassifier::train(std::vector<cv::Mat1b>& truePositive,
                         0.0f) /
         elm;
 
+  _tUpper[0] += 300;
+  _tLower[0] -= 300;
+
   _tUpper[1] += 100;
   _tLower[1] -= 100;
 
-//  _tUpper[2] -= 100;
+  _tUpper[2] += 100;
+  _tLower[2] -= 100;
 
   _tLower[3] -= 100;
   _tUpper[3] += 100;
-  _t2 -= 100;
-  _t1 -= 50;
+  _t2 -= 150;
+  _t1 -= 200;
 
   std::cout << "T1: " << _t1 << "\nT2: " << _t2 << "\n";
   for (auto i = 0; i < 4; ++i) {

@@ -171,7 +171,6 @@ FacialRecognition::FacialRecognition(QWidget* parent)
       std::string name = "test" + std::to_string(i);
       cv::namedWindow(name);
       cv::imshow(name, test);
-
     }
     std::cout << "[!] Tested using yalefaces\n";
     std::cout << "[!] Processed " << i << " images\n";
