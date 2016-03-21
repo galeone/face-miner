@@ -39,7 +39,7 @@ At the moment the complete theorical discussion is in __Italian only__.
 # Results
 The `results/` folder contains some example of the results of Face Miner
 
-# Performance and comparision wiht Viola & Jones framework
+# Performance and comparision with the Viola & Jones algorithm
 The performance of Face Miner are __bad__ in term of speed, especially if compared to the speed achieved by the state of art algorithm used for the face detection task: the Viola & Jones algorithm.
 
 The other main difference, is the region detected. In Face Miner the ROI is smaller wrt the ROI detected with Viola & Jones. This can be __good__ in applications of facial recognition, where you have to reduce noisy parts to focus on the face only.
