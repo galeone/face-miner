@@ -4,7 +4,7 @@ Data mining applied to face detection
 
 # How Face Miner works
 
-Face Miner is based on the paper of Wen-Kwang Tsao [1](#1).
+Face Miner is based on the paper of Wen-Kwang Tsao [[1]].
 
 The aim of Face Miner is to build a classifier capable of detecting faces in images.
 
@@ -43,11 +43,13 @@ Below you can see the different ROI detected with Face Miner and Viola & Jones.
 
 ![Comparison](https://media.nerdz.eu/8ltnyr7GKCPI.png)
 
-The benchmark has been done on the Yale Face Database B[2]
+The benchmark has been done on the Yale Face Database B [[2]]
 
 # License
 Face Miner is licensed under Mozilla Public License version 2.0
 
 # References
+1. A data mining approach to face Detection
 [1]: http://www.sciencedirect.com/science/article/pii/S0031320309003434 "A data mining approach to face detection"
+2. Yale Face Database B
 [2]: http://vision.ucsd.edu/content/yale-face-database "P. Belhumeur, J. Hespanha, D. Kriegman, Eigenfaces vs. Fisherfaces: Recognition Using Class Specific Linear Projection, IEEE Transactions on Pattern Analysis and Machine Intelligence, July 1997, pp. 711-720."
