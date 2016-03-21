@@ -17,7 +17,6 @@ LIBS += `pkg-config opencv --libs`
 
 SOURCES += main.cpp\
         facialrecognition.cpp \
-    cameracalibrationworker.cpp \
     cv2qt.cpp \
     qt2cv.cpp \
     camstream.cpp \
@@ -34,7 +33,6 @@ SOURCES += main.cpp\
     integralimage.cpp
 
 HEADERS  += facialrecognition.h \
-    cameracalibrationworker.h \
     cv2qt.h \
     qt2cv.h \
     camstream.h \
@@ -53,20 +51,15 @@ HEADERS  += facialrecognition.h \
 
 FORMS    += facialrecognition.ui
 
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/build-MAFIA-Desktop-Debug/release/ -lMAFIA
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/build-MAFIA-Desktop-Debug/debug/ -lMAFIA
-#else:unix: LIBS += -L$$PWD/build-MAFIA-Desktop-Debug/ -lMAFIA
-
-#INCLUDEPATH += $$PWD/MAFIA
-#DEPENDPATH += $$PWD/MAFIA
-
 # http://dragly.org/2013/11/05/copying-data-files-to-the-build-directory-when-working-with-qmake/
-#copydata.commands = $(COPY_DIR) $$PWD/datasets/ $$OUT_PWD
+copydata.commands = $(COPY_DIR) $$PWD/datasets/ $$OUT_PWD
+copyxml.commands += $(COPY) $$PWD/*.xml $$OUT_PWD
 
-#CONFIG(release, debug|release): mafiaexe.commands = $(COPY) $$PWD/build-MAFIA-Desktop-Debug/MAFIA $$OUT_PWD
-#CONFIG(debug, debug|release): mafiaexe.commands = $(COPY) $$PWD/build-MAFIA-Desktop-Release/MAFIA $$OUT_PWD
-#first.depends = $(first) copydata mafiaexe
-#export(first.depends)
-#export(mafiaexe.commands)
-#export(copydata.commands)
-#QMAKE_EXTRA_TARGETS += first copydata mafiaexe
+CONFIG(release, debug|release): mafiaexe.commands = $(COPY) $$PWD/build-MAFIA-Desktop-Debug/MAFIA $$OUT_PWD
+CONFIG(debug, debug|release): mafiaexe.commands = $(COPY) $$PWD/build-MAFIA-Desktop-Release/MAFIA $$OUT_PWD
+first.depends = $(first) copydata copyxml mafiaexe
+export(first.depends)
+export(mafiaexe.commands)
+export(copydata.commands)
+export(copyxml.commands)
+QMAKE_EXTRA_TARGETS += first copyxml copydata mafiaexe

@@ -47,6 +47,8 @@ void FeatureClassifier::train(std::vector<cv::Mat1b>& truePositive,
   std::vector<int32_t> positiveT1, positiveT2, positiveCoeff[4];
   int32_t _c1, _c2, _c3, _c4;
 
+  (void)falsePositive; // avoid unused parameter warning
+
   for (const auto& gray : truePositive) {
     _setConstants(gray, &_c1, &_c2, &_c3, &_c4);
 

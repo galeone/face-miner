@@ -138,8 +138,6 @@ FacialRecognition::FacialRecognition(QWidget* parent)
 
   // handle faceFinder::ready signal
   connect(_faceFinder, &FaceFinder::ready, this, [&]() {
-    auto i = 1;
-
     std::vector<std::string> paths;
     paths.reserve(1600);
     QDirIterator* it = new QDirIterator(QString("./datasets/yalefaces/"));
@@ -149,79 +147,77 @@ FacialRecognition::FacialRecognition(QWidget* parent)
         paths.push_back(file.toStdString());
       }
     }
-    double totalTime = 0;
-    size_t detectedFaces = 0;
 
     // Create viola-jones classifier for banchmarking
     cv::CascadeClassifier vj;
-    if (!vj.load(
-            "/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml")) {
+    if (!vj.load("./haarcascade_frontalface_default.xml")) {
       std::cerr << "Unable to load vj pre-trained fontalface classifier\n"
                 << std::endl;
       return;
     }
 
-    // sync execution
-/*
+    const size_t minerID = 0, vjID = 1;
+    double totalTime[2] = {0, 0};
+    size_t detectedFaces[2] = {0, 0}, i = 0;
+
+    // sync execution, two windows one next to the other.
+    // Step forward pressing any key
     for (const std::string& path : paths) {
       std::cout << path << ": ";
-      cv::Mat test_fm = cv::imread(path);
+      cv::Mat current = cv::imread(path);
+      cv::Mat test_fm;
+      current.copyTo(test_fm);
       auto Start = cv::getTickCount();
-      auto faces = _faceFinder->find(test_fm);
+      auto FMFaces = _faceFinder->find(test_fm);
       auto End = cv::getTickCount();
       auto seconds = (End - Start) / cv::getTickFrequency();
-      totalTime += seconds;
-      ++i;
-      std::cout << "Time: " << seconds << "s (" << faces.size() << ") "
+      totalTime[minerID] += seconds;
+
+      std::cout << "Time: " << seconds << "s (" << FMFaces.size() << ") "
                 << test_fm.size() << std::endl;
-      for (const auto& face : faces) {
+      for (const auto& face : FMFaces) {
         cv::rectangle(test_fm, face.first, cv::Scalar(255, 255, 0));
       }
-      detectedFaces += faces.size();
-      //std::string name = "test face miner";
-      //cv::namedWindow(name);
-      //cv::imshow(name, test_fm);
-      // cv::waitKey(0);
-    }
-    std::cout << "[!] Tested using yalefaces\n";
-    std::cout << "[!] Processed " << i << " images\n";
-    std::cout << "[!] Detected " << detectedFaces << " faces\n";
-    std::cout << "[!] Elapsed time: " << totalTime << "\n";
-    std::cout << "[!] Average time: " << totalTime / i << std::endl;
-*/
-    // vj
-    i = 0;
-    detectedFaces = 0;
-    totalTime = 0;
-    for (const std::string& path : paths) {
-      std::cout << path << ": ";
+      detectedFaces[minerID] += FMFaces.size();
+      std::string name = "Face Miner";
+      cv::namedWindow(name);
+      cv::imshow(name, test_fm);
+
       // vj classifiers requires gray level image in input
       // fm handles color images as well, thus to benchmark
       // start vj counter when converting image to grayscale
-      auto Start = cv::getTickCount();
-      cv::Mat test_vj = cv::imread(path, cv::IMREAD_GRAYSCALE);
-      std::vector<cv::Rect> faces;
-      vj.detectMultiScale(test_vj, faces, 1.25, 2, 0 | CV_HAAR_SCALE_IMAGE,
+      Start = cv::getTickCount();
+      cv::Mat test_vj = Preprocessor::gray(current);
+      std::vector<cv::Rect> VJFaces;
+      vj.detectMultiScale(test_vj, VJFaces, 1.25, 2, 0 | CV_HAAR_SCALE_IMAGE,
                           cv::Size(19, 19));
-      auto End = cv::getTickCount();
-      auto seconds = (End - Start) / cv::getTickFrequency();
-      totalTime += seconds;
-      ++i;
-      std::cout << "Time: " << seconds << "s (" << faces.size() << ") "
+      End = cv::getTickCount();
+      seconds = (End - Start) / cv::getTickFrequency();
+      totalTime[vjID] += seconds;
+
+      std::cout << "Time: " << seconds << "s (" << VJFaces.size() << ") "
                 << test_vj.size() << std::endl;
-      for (const auto& face : faces) {
+      for (const auto& face : VJFaces) {
         cv::rectangle(test_vj, face, cv::Scalar(255, 255, 0));
       }
-      detectedFaces += faces.size();
-    /*  cv::namedWindow("vj detection");
-      cv::imshow("vj detection", test_vj);
-      cv::waitKey(0); */
+      detectedFaces[vjID] += VJFaces.size();
+      name = "Viola & Jones";
+      cv::namedWindow(name);
+      cv::imshow(name, test_vj);
+      cv::waitKey(0);
+      ++i;
     }
-    std::cout << "[!] Tested using yalefaces\n";
-    std::cout << "[!] Processed " << i << " images\n";
-    std::cout << "[!] Detected " << detectedFaces << " faces\n";
-    std::cout << "[!] Elapsed time: " << totalTime << "\n";
-    std::cout << "[!] Average time: " << totalTime / i << std::endl;
+
+    std::cout << "Stats" << std::endl;
+    for (size_t t = 0; t < 2; t++) {
+      auto algString = t == vjID ? "Viola & Jones" : "Face Miner";
+      std::cout << "\n" << algString << "\n";
+      std::cout << "[!] Tested using yalefaces\n";
+      std::cout << "[!] Processed " << i << " images\n";
+      std::cout << "[!] Detected " << detectedFaces[t] << " faces\n";
+      std::cout << "[!] Elapsed time: " << totalTime[t] << "\n";
+      std::cout << "[!] Average time: " << totalTime[t] / i << std::endl;
+    }
 
     //_startCamStream();
   });
