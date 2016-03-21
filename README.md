@@ -4,7 +4,7 @@ Data mining applied to face detection
 
 # How Face Miner works
 
-Face Miner is based on the paper of Wen-Kwang Tsao [[1]].
+Face Miner is based on the paper of Wen-Kwang Tsao [[1]]. To understand Face Miner, you have to read it before. You can find a copy of the paper into the `docs/` folder.
 
 The aim of Face Miner is to build a classifier capable of detecting faces in images.
 
@@ -28,8 +28,13 @@ The main differences between the original paper and Face Miner are:
 # Build and Install
 Load the project into Qt Creator. Build the subproject MAFIA before and than build Face Miner.
 
+# Theory
+The theory behind face miner, and thus the critical discussion can be found in the `docs/pdf` folder.
+At the moment the complete theorical discussion is in __Italian only__.
+
 # TODO
-Make face miner a library, separated from the example implementation that uses QT.
+- Make face miner a library, separated from the example implementation that uses QT.
+- Improve README.md (translate PDF documentation in English)
 
 # Results
 The `results/` folder contains some example of the results of Face Miner
