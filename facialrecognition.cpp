@@ -170,11 +170,12 @@ FacialRecognition::FacialRecognition(QWidget* parent)
     const size_t minerID = 0, vjID = 1;
     double totalTime[2] = {0, 0};
     size_t detectedFaces[2] = {0, 0}, i = 0;
+    bool wait = true;
 
     // sync execution, two windows one next to the other.
     // Step forward pressing any key
     for (const std::string& path : paths) {
-      std::cout << path << ": ";
+      std::cout << path << "\n";
       cv::Mat current = cv::imread(path);
       cv::Mat test_fm;
       current.copyTo(test_fm);
@@ -184,15 +185,12 @@ FacialRecognition::FacialRecognition(QWidget* parent)
       auto seconds = (End - Start) / cv::getTickFrequency();
       totalTime[minerID] += seconds;
 
-      std::cout << "Time: " << seconds << "s (" << FMFaces.size() << ") "
+      std::cout << "FM: Time: " << seconds << "s (" << FMFaces.size() << ") "
                 << test_fm.size() << std::endl;
       for (const auto& face : FMFaces) {
         cv::rectangle(test_fm, face.first, cv::Scalar(255, 255, 0));
       }
       detectedFaces[minerID] += FMFaces.size();
-      std::string name = "Face Miner";
-      cv::namedWindow(name);
-      cv::imshow(name, test_fm);
 
       // vj classifiers requires gray level image in input
       // fm handles color images as well, thus to benchmark
@@ -206,16 +204,28 @@ FacialRecognition::FacialRecognition(QWidget* parent)
       seconds = (End - Start) / cv::getTickFrequency();
       totalTime[vjID] += seconds;
 
-      std::cout << "Time: " << seconds << "s (" << VJFaces.size() << ") "
+      std::cout << "VJ: Time: " << seconds << "s (" << VJFaces.size() << ") "
                 << test_vj.size() << std::endl;
       for (const auto& face : VJFaces) {
         cv::rectangle(test_vj, face, cv::Scalar(255, 255, 0));
       }
       detectedFaces[vjID] += VJFaces.size();
-      name = "Viola & Jones";
-      cv::namedWindow(name);
-      cv::imshow(name, test_vj);
-      cv::waitKey(0);
+      if (wait) {
+        std::string name = "Face Miner";
+        cv::namedWindow(name);
+        cv::imshow(name, test_fm);
+        name = "Viola & Jones";
+        cv::namedWindow(name);
+        cv::imshow(name, test_vj);
+        if ((char)27 == (char)cv::waitKey(0)) {
+          wait = false;
+          cv::destroyAllWindows();
+          // https://stackoverflow.com/questions/6116564/destroywindow-does-not-close-window-on-mac-using-python-and-opencv
+          for (size_t x = 0; x < 10; ++x) {
+            cv::waitKey(1);
+          }
+        }
+      }
       ++i;
     }
 
