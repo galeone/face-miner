@@ -14,7 +14,7 @@ To reach this aim, the paper's authors built three different classifiers, using 
 
 In Face Miner, a critical discussion of the paper has been done. Therefore Face Miner __is not__ a reproduction of the work described in the paper, but a different implementation resulting from this critical discussion.
 
-The original paper was not reproducible due to the usage of private datasets and neither the resulting work was publicly avaible.
+The original paper was not reproducible due to the usage of private datasets and neither the resulting work was publicly available.
 
 Face Miner is completely reproducible and the resulting work is avaiable in this repo.
 
@@ -22,7 +22,7 @@ The main differences between the original paper and Face Miner are:
 - The datasets used to train and test the classifiers
 - Thus the resulting Maximal Frequent Patterns mined from the MAFIA algorithm
 - The features extracted from the train dataset, to train the Support Vecotr Machine.
-- The way to reduce the dimensionality of theese features (the authors used a k-d-tree, and I'm still asking myself why and how. They're not searching anything but they're using the k-d-tree to project featuers along different axis (???)), in Face Miner the PCA has been used.
+- The way to reduce the dimensionality of these features (the authors used a k-d-tree, and I'm still asking myself why and how. They're not searching anything but they're using the k-d-tree to project featuers along different axis (???)), in Face Miner the PCA has been used.
 - The preprocessing thresholds used in the binarization step (and also this is due to the usage of different datasets)
 - The single response criterion: in Face Miner we stop asap without collecting a set of regions and scoring every extracted region.
 - The performance: are the performance described in the paper real?
@@ -41,7 +41,7 @@ At the moment the complete theorical discussion is in __Italian only__.
 # Results
 The `results/` folder contains some example of the results of Face Miner
 
-# Performance and comparision with the Viola & Jones algorithm
+# Performance and comparison with the Viola & Jones algorithm
 The performance of Face Miner are __bad__ in term of speed, especially if compared to the speed achieved by the state of art algorithm used for the face detection task: the Viola & Jones algorithm.
 
 The other main difference, is the region detected. In Face Miner the ROI is smaller wrt the ROI detected with Viola & Jones. This can be __good__ in applications of facial recognition, where you have to reduce noisy parts to focus on the face only.
