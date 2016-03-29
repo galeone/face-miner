@@ -55,8 +55,8 @@ FORMS    += facialrecognition.ui
 copydata.commands = $(COPY_DIR) $$PWD/datasets/ $$OUT_PWD
 copyxml.commands += $(COPY) $$PWD/*.xml $$OUT_PWD
 
-CONFIG(release, debug|release): mafiaexe.commands = $(COPY) $$PWD/build-MAFIA-Desktop-Debug/MAFIA $$OUT_PWD
-CONFIG(debug, debug|release): mafiaexe.commands = $(COPY) $$PWD/build-MAFIA-Desktop-Release/MAFIA $$OUT_PWD
+CONFIG(release, debug|release): mafiaexe.commands = $(COPY) $$PWD/build-MAFIA-Desktop-Release/MAFIA $$OUT_PWD
+CONFIG(debug, debug|release): mafiaexe.commands = $(COPY) $$PWD/build-MAFIA-Desktop-Debug/MAFIA $$OUT_PWD
 first.depends = $(first) copydata copyxml mafiaexe
 export(first.depends)
 export(mafiaexe.commands)
