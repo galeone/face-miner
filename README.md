@@ -4,6 +4,8 @@ Data mining applied to face detection
 
 # How Face Miner works
 
+*Do you want to see a presentation that's a summary of the work? Checkout the project website: <https://galeone.github.io/face-miner/>*
+
 Face Miner is based on the paper of Wen-Kwang Tsao [[1]]. To understand Face Miner, you have to read it before. You can find a copy of the paper into the `docs/` folder.
 
 The aim of Face Miner is to build a classifier capable of detecting faces in images.
