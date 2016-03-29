@@ -1,0 +1,866 @@
+
+<!-- saved from url=(0058)http://strut.io/editor/preview_export/impress.html#/step-1 -->
+<html style="height: 100%;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Face Miner: data mining applied to face detection</title>
+
+<meta name="description" content="TODO">
+<meta name="author" content="TODO">
+
+<style>
+.componentContainer {
+    position: absolute;
+    line-height: normal;
+    /*-webkit-transform-origin: 135% 135%;
+    -moz-transform-origin: 135% 135%;
+    transform-origin: 135% 135%;*/
+}
+
+.transformContainer {
+    -webkit-transform-origin: 0 0;
+    -moz-transform-origin: 0 0;
+    transform-origin: 0 0;
+}
+
+.bg {
+    width: 100%;
+    height: 100%;
+}
+</style>
+
+<link rel="stylesheet" href="./index_files/default-reset.css">
+<link href="./index_files/main.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="./index_files/default.css" id="theme">
+<link href="./index_files/web-fonts.css" rel="stylesheet" type="text/css">
+<link href="./index_files/backgroundClasses.css" rel="stylesheet" type="text/css">
+<link href="./index_files/surfaceClasses.css" rel="stylesheet" type="text/css">
+
+<link rel="shortcut icon" href="http://strut.io/editor/preview_export/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="http://strut.io/editor/preview_export/apple-touch-icon.png" type="image/png">
+
+<style>
+.reveal.themedArea {
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+}
+</style>
+
+<script async="" src="./index_files/analytics.js"></script><script type="text/javascript" src="./index_files/dataset-shim.js"></script>
+<script type="text/javascript" src="./index_files/impress.js"></script>
+
+<script src="./index_files/onready.js"></script>
+<script src="./index_files/loadPresentation.js"></script>
+<script>
+ready(function() {
+    if (document.getElementById('launched-placeholder'))
+        loadPresentation();
+
+    if (!window.presStarted) {
+        startPres(document, window);
+        impress().init();   
+    }
+
+    if ("ontouchstart" in document.documentElement) { 
+        document.querySelector(".hint").innerHTML = 
+            "<p>Tap on the left or right to navigate</p>";
+    }
+});
+</script>
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-42322531-1', 'strut.io');
+    ga('send', 'pageview');
+    </script>
+</head>
+<body class="impress-supported impress-enabled" style="height: 100%; overflow: hidden;" data-feedly-mini="yes">
+<style type="text/css">
+
+</style>
+<style>
+
+</style>
+<style>
+
+
+
+	
+		
+		
+	
+
+	
+		
+		
+	
+
+	
+		
+		
+	
+
+	
+		
+		
+	
+
+	
+		
+		
+	
+
+	
+		
+		
+	
+
+	
+		
+		
+	
+
+	
+		
+		
+	
+
+	
+		
+		
+	
+
+	
+		
+		
+	
+
+	
+		
+		
+	
+
+	
+		
+		
+	
+
+</style>
+<!-- This is a work around / hack to get the user's browser to download the fonts 
+ if they decide to save the presentation. -->
+<div style="visibility: hidden; width: 0px; height: 0px">
+<img src="./index_files/Lato-Bold.woff">
+<img src="./index_files/HammersmithOne.woff">
+<img src="./index_files/Droid-Sans-Mono.woff">
+<img src="./index_files/Gorditas-Regular.woff">
+<img src="./index_files/FredokaOne-Regular.woff">
+<img src="./index_files/Ubuntu.woff">
+<img src="./index_files/Ubuntu-Bold.woff">
+<img src="./index_files/PressStart2P-Regular.woff">
+<img src="./index_files/Lato-BoldItalic.woff">
+<img src="./index_files/AbrilFatface-Regular.woff">
+<img src="./index_files/Lato-Regular.woff">
+</div>
+
+<div class="fallback-message">
+    <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+    <p>For the best experience please use the latest <b>Chrome</b>, <b>Safari</b> or <b>Firefox</b> browser.</p>
+</div>
+
+<div class="bg  strut-surface">
+<div class="bg innerBg strut-slide-0">
+<div id="impress" style="position: absolute; transform-origin: left top 0px; transition: all 500ms ease-in-out 250ms; transform-style: preserve-3d; top: 50%; left: 50%; transform: perspective(3449.1px) scale(0.289931);"><div style="position: absolute; transform-origin: left top 0px; transition: all 500ms ease-in-out 0ms; transform-style: preserve-3d; transform: rotateZ(0deg) rotateY(0deg) rotateX(0deg) translate3d(-2471.25px, -5437.44px, 0px);">
+	
+		
+			<div class="step present active" data-state="strut-slide-0" data-x="2471.2533333333336" data-y="5437.44" data-scale="3" id="step-1" style="position: absolute; transform: translate(-50%, -50%) translate3d(2471.25px, 5437.44px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(3); transform-style: preserve-3d;">
+			<div class=" slideContainer strut-slide-0" style="width: 1024px; height: 768px;">
+			<div class="themedArea">
+			
+			</div>
+			
+			<div class="componentContainer " style="top: 153px; left: 351px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 72px;" class="antialias">
+<font>Face Miner</font>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 317px; left: 202px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+<font>Data Mining applied to<br><div style="text-align: center;">Face Detection</div></font>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 634px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: 74px; height: 74px;">
+<div class="transformContainer" style="-webkit-transform: scale(0.14, 0.14);
+-moz-transform: scale(0.14, 0.14);
+transform: scale(0.14, 0.14)">
+<img src="./index_files/GitHub-Logo-Mark.png">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 657px; left: 94px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+<font><a href="https://github.com/galeone/face-miner" target="_blank">https://github.com/galeone/face-miner</a></font>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 657px; left: 850px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+<font>Paolo Galeone</font>
+</div>
+</div>
+</div>
+			
+			</div>
+		
+		</div>
+	
+		
+			<div class="step past" data-state="strut-slide-1" data-x="6280.533333333334" data-y="2764.8" data-scale="3" id="step-2" style="position: absolute; transform: translate(-50%, -50%) translate3d(6280.53px, 2764.8px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(3); transform-style: preserve-3d;">
+			<div class=" slideContainer strut-slide-1" style="width: 1024px; height: 768px;">
+			<div class="themedArea">
+			
+			</div>
+			
+			<div class="componentContainer " style="top: 12px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+Face Detection &amp; Data Mining<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 159px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+"Face detection can be regarded as a specific case of object-class detection.<br>In object-class detection,&nbsp;the task is to find the locations and sizes of all objects in an image that<br>belong to a given class. &nbsp;Face-detection algorithms aims to<br>detect frontal human faces." [1]<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 225px; left: 697px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: 303px; height: 320.1px;">
+<div class="transformContainer" style="-webkit-transform: scale(0.59, 0.59);
+-moz-transform: scale(0.59, 0.59);
+transform: scale(0.59, 0.59)">
+<img src="./index_files/facedet.png">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 280px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+"Data Mining is the computational process&nbsp;of discovering<br>patterns&nbsp;in large data sets" [2]<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 100px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 36px;" class="antialias">
+<font>Let's see what Wikipedia says about these two topics...</font>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 705px; left: 500px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+<font>[1] <a href="https://en.wikipedia.org/wiki/Face_detection" target="_blank">https://en.wikipedia.org/wiki/Face_detection</a><br>[2] <a href="https://en.wikipedia.org/wiki/Data_Mining" target="_blank">https://en.wikipedia.org/wiki/Data_Mining</a><br></font>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 345px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 36px;" class="antialias">
+How can these two topics be related?<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 405px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+Lets think of an image like a set of pixel. Each pixel has its local<br>and non local characteristics (position, color, neighborhood...).<br>Therefore a set of images of the same subject, will share the<br>same&nbsp;characteristics.<br><br>A human face has its own characteristics that gives us the ability&nbsp;to detect a human face just<br>looking for those characteristics.<br><br>If follows that <b>we can use Data Mining to discover patterns in image datasets and use<br>the discovered patterns as a set of characteristics that helps us in the Face Detection task.</b><br>
+</div>
+</div>
+</div>
+			
+			</div>
+		
+		</div>
+	
+		
+			<div class="step past" data-state="strut-slide-2" data-x="10103.466666666667" data-y="2764.8" data-scale="3" id="step-3" style="position: absolute; transform: translate(-50%, -50%) translate3d(10103.5px, 2764.8px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(3); transform-style: preserve-3d;">
+			<div class=" slideContainer strut-slide-2" style="width: 1024px; height: 768px;">
+			<div class="themedArea">
+			
+			</div>
+			
+			<div class="componentContainer " style="top: 12px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+Mining Maximal Frequent Patterns<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 82px; left: 482px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: 542px; height: 376.55px;">
+<div class="transformContainer" style="-webkit-transform: scale(1.14, 1.14);
+-moz-transform: scale(1.14, 1.14);
+transform: scale(1.14, 1.14)">
+<img src="./index_files/w5e1q0j.png">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 100px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+The <b>MAFIA</b> [3]&nbsp;algorithm can efficiently<br>generate&nbsp;maximal frequent patterns from<br>a database. <br><br>Considering a dataset of face images<br>like a transaction database, in which every<br>row (transaction)&nbsp;is an image, we can use<br>MAFIA to mine those pixels that&nbsp;co-occurs<br>in a human face.&nbsp;Those feature&nbsp;pixels will<br>form a&nbsp;<b>maximal frequent pattern</b>.<br><br><br><br>To use the MAFIA algorithm <b>a preprocessing step is required,</b> because the intensity value range&nbsp;<br>is too wide to extract useful information:<i> there are too many items in the basket!</i><br>In fact, the MAFIA algorithm is based on the Apriori algorithm frequently used in the market<br>basked analysis.<br><br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 705px; left: 505px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+<font>[3] <a href="http://himalaya-tools.sourceforge.net/Mafia/" target="_blank">http://himalaya-tools.sourceforge.net/Mafia/</a><br></font>
+</div>
+</div>
+</div>
+			
+			</div>
+		
+		</div>
+	
+		
+			<div class="step past" data-state="strut-slide-3" data-x="13926.4" data-y="2764.8" data-scale="3" id="step-4" style="position: absolute; transform: translate(-50%, -50%) translate3d(13926.4px, 2764.8px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(3); transform-style: preserve-3d;">
+			<div class=" slideContainer strut-slide-3" style="width: 1024px; height: 768px;">
+			<div class="themedArea">
+			
+			</div>
+			
+			<div class="componentContainer " style="top: 12px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+Preprocessing<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 440px; left: 273px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: 520px; height: 102.87px;">
+<div class="transformContainer" style="-webkit-transform: scale(1.13, 1.13);
+-moz-transform: scale(1.13, 1.13);
+transform: scale(1.13, 1.13)">
+<img src="./index_files/CcfH74r.png">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 95px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+The preprocessing steps are:<br><br><ol><li><span style="line-height: normal;"><b>Histogram equalization</b>: in order to improve constrast</span></li><li><span style="line-height: normal;"><b>Smooth derivate along the horizontal axis</b>, using the Sobel operator</span></li><li><span style="line-height: normal;"><b>Thresholding </b>of the derivate magnitude<br><br><br><br><br></span></li><li><span style="line-height: normal;"><b>Dilatation</b> using a structuring element with a cross shape</span></li></ol><div>The image below shows the preprocessing steps results</div><div><br></div><div><br></div><div><br></div><div><br></div><div><br></div><div>The resulting image is called <b>edge-image</b>. Its complement is called non <b>edge-image.</b></div>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 253px; left: 90px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<img src="./index_files/7yhvAga.png">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 625px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 36px;" class="antialias">
+<font>Performance:</font>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 681px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+Instead of calculate the average and the variance in the raw image, the used approach is to use<br>the <b>integral image</b>&nbsp;to compute these values in constant time.<br>
+</div>
+</div>
+</div>
+			
+			</div>
+		
+		</div>
+	
+		
+			<div class="step past" data-state="strut-slide-4" data-x="17749.333333333332" data-y="2764.8" data-scale="3" id="step-5" style="position: absolute; transform: translate(-50%, -50%) translate3d(17749.3px, 2764.8px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(3); transform-style: preserve-3d;">
+			<div class=" slideContainer strut-slide-4" style="width: 1024px; height: 768px;">
+			<div class="themedArea">
+			
+			</div>
+			
+			<div class="componentContainer " style="top: 12px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+Build the face detector<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 99.03px; left: 17.03px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+Based on the positive and negative feature patterns mined, we&nbsp;adopt the <b>coarse-to-fine</b><br>strategy to&nbsp;construct the face detector, which consists in three cascaded&nbsp;classifiers.<br><br><ol><li><span style="line-height: normal;"><b>Variance classifier:&nbsp;</b>to prune w</span><span style="line-height: normal;">indows with a small variance.</span></li><li><span style="line-height: normal;"><b>Face features classifier:&nbsp;</b></span><span style="line-height: normal;">to select the windows with most facial features.&nbsp;</span></li><li><span style="line-height: normal;"><b>Suppor Vector Machine</b>: to refine the results.</span></li></ol><br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 294px; left: 186px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: 619px; height: 146.39px;">
+<div class="transformContainer" style="-webkit-transform: scale(1.15, 1.15);
+-moz-transform: scale(1.15, 1.15);
+transform: scale(1.15, 1.15)">
+<img src="./index_files/1HuiNxk.png">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 440px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+<br>In the detection phase, <b>a sliding window approach</b> is<br>used to&nbsp;search for the faces in image.<br>For each sliding window,&nbsp;we extract the regions<br>of size 19x19 from every location in the&nbsp;input image<br><b>pyramid by downsampling.</b><br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 470px; left: 598px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: 416px; height: 277.62px;">
+<div class="transformContainer" style="-webkit-transform: scale(0.29, 0.29);
+-moz-transform: scale(0.29, 0.29);
+transform: scale(0.29, 0.29)">
+<img src="./index_files/wtenYx0.jpg">
+</div>
+</div>
+			
+			</div>
+		
+		</div>
+	
+		
+			<div class="step past" data-state="strut-slide-5" data-x="21572.266666666666" data-y="2764.8" data-scale="3" id="step-6" style="position: absolute; transform: translate(-50%, -50%) translate3d(21572.3px, 2764.8px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(3); transform-style: preserve-3d;">
+			<div class=" slideContainer strut-slide-5" style="width: 1024px; height: 768px;">
+			<div class="themedArea">
+			
+			</div>
+			
+			<div class="componentContainer " style="top: 12px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+Variance Classifier<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 100px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+This classifier is used to improve the computational efficiency of the detection algorithm.<br>It prunes windows that can't&nbsp;contains faces at all.<br><br>The window is divided in 5 regions. For every region, the variance<br>is computed.<br><br>Then, the window gets discarded if:<br>&nbsp; &nbsp; &nbsp; or &nbsp; &nbsp; &nbsp; &nbsp;is less then a predefined threshold.<br><br>Threshold that must be learned with an iterative process.<br><br>If the windows passes this first step, a second criterion on the pixels average differences is<br>applied to the remaining window.<br><br>If the windows passes this second step, it's passed to the face features classifier, otherwise<br>it gets discarded.<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 144px; left: 721px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<img src="./index_files/ElYBkQv.png">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 312px; left: 13px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<img src="./index_files/KItvbsz.png">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 316px; left: 71px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<img src="./index_files/SdF5k5f.png">
+</div>
+</div>
+			
+			</div>
+		
+		</div>
+	
+		
+			<div class="step past" data-state="strut-slide-6" data-x="25231.36" data-y="2764.8" data-scale="3" id="step-7" style="position: absolute; transform: translate(-50%, -50%) translate3d(25231.4px, 2764.8px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(3); transform-style: preserve-3d;">
+			<div class=" slideContainer strut-slide-6" style="width: 1024px; height: 768px;">
+			<div class="themedArea">
+			
+			</div>
+			
+			<div class="componentContainer " style="top: 12px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+Back to MAFIA...<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 99px; left: 16px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 36px;" class="antialias">
+<font>Positive and negative maximal frequent patterns.</font>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 159px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+From the edge and non edge images, we built 2 databases. The first is the positive patterns DB,<br>the second is the negative patterns DB. Every row contains the coordinates of the black pixels.<br><br>Applying MAFIA on these databases we obtained the following patterns, called<br><b>positive &amp; negative features patterns</b>.&nbsp;<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 320px; left: 212px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<img src="./index_files/7sqtwmp.png">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 660px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+Thus,<br><b>we can automatically find the features patterns that capture most of the facial features.</b><br>
+</div>
+</div>
+</div>
+			
+			</div>
+		
+		</div>
+	
+		
+			<div class="step past" data-state="strut-slide-7" data-x="28863.146666666667" data-y="2764.8" data-scale="3" id="step-8" style="position: absolute; transform: translate(-50%, -50%) translate3d(28863.1px, 2764.8px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(3); transform-style: preserve-3d;">
+			<div class=" slideContainer strut-slide-7" style="width: 1024px; height: 768px;">
+			<div class="themedArea">
+			
+			</div>
+			
+			<div class="componentContainer " style="top: 12px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+Face Feature classifier<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 100px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+The face feature classifier utilizes the&nbsp;positive and negative feature patterns mined to select the<br>images&nbsp;with the most facial features and discard the non-face images.<br><br>This classifier is rule based and needs an iterative process <b>to learn 6 different thresholds</b>.<br>Rules are defined using the patterns as a mask and computing the sum of the intensities.<br><br>A long an iterative process has been done to learn the<br>thresholds.<br>The learning process was based on the <b>precision &amp;<br>recall metrics </b>and was stopped when satisfactory values<br>got reached.<br><br><br><br>Any image that meets the rules 1, 2 and 3 is passed to the SVM classifier,<br>otherwise it gets discarded.<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 258px; left: 606px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: 419px; height: 217.53px;">
+<div class="transformContainer" style="-webkit-transform: scale(1.24, 1.24);
+-moz-transform: scale(1.24, 1.24);
+transform: scale(1.24, 1.24)">
+<img src="./index_files/t8CY8GF.png">
+</div>
+</div>
+			
+			</div>
+		
+		</div>
+	
+		
+			<div class="step past" data-state="strut-slide-8" data-x="32604.16" data-y="2764.8" data-scale="3" id="step-9" style="position: absolute; transform: translate(-50%, -50%) translate3d(32604.2px, 2764.8px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(3); transform-style: preserve-3d;">
+			<div class=" slideContainer strut-slide-8" style="width: 1024px; height: 768px;">
+			<div class="themedArea">
+			
+			</div>
+			
+			<div class="componentContainer " style="top: 12px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+Support Vector Machine<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 100px; left: 643px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<img src="./index_files/ZJA9vKr.png">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 99px; left: 17px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+To increase the accuracy of the face detector a SVM is used<br>in the last step.<br><br>Intuitively, the SVM tries to <b>find the optimal hyperplane </b>so<br>that the margin between the two classes is maximized.<br><br>The SVM needs<b> to be trained </b>in order to achieve<br>this result.<br><br>In Face Miner the SVM classifies vectors in two classes:<br>face and non face.<br><br>Every vector is a n-dimensional vector whose&nbsp;components are features of the current image.<br><br><br>The features selected in Face Miner are the <b>coefficients of the HAAR<br>transform</b> of the rows in the&nbsp;eye and mouth regions.<br><br>The <b>true and false positives obtained from the first two classifiers<br></b>are&nbsp;used as train data for the SVM.<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 479px; left: 750px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<img src="./index_files/zFC6YO0.png">
+</div>
+</div>
+			
+			</div>
+		
+		</div>
+	
+		
+			<div class="step past" data-state="strut-slide-9" data-x="36440.746666666666" data-y="2764.8" data-scale="3" id="step-10" style="position: absolute; transform: translate(-50%, -50%) translate3d(36440.7px, 2764.8px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(3); transform-style: preserve-3d;">
+			<div class=" slideContainer strut-slide-9" style="width: 1024px; height: 768px;">
+			<div class="themedArea">
+			
+			</div>
+			
+			<div class="componentContainer " style="top: 12px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+SVM: dimensionality reduction<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 103.88px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+Working with a dataset in which every image is 19x19, we select 2 rows at eye and 3 rows<br>at&nbsp;mouth. Thus,<b>&nbsp;19x2 + 19x3 = 95 features for vector.</b><br><br>To speed-up the SVM and to increase the chance to find an optimal hyperplane a<br>dimensionality reduction technique has been used: the <b>Principal Component&nbsp;Analysis</b>.<br><br>The PCA gives us the ability to select only those features that have the highest variance,<br>the ones with the greatest information content.<br><br>After various tests, we find out that the number of<br>components can be reduced&nbsp;<b>from&nbsp;95 to 29</b>.<br><br>Even with 29 features only, an optimal hyperplane&nbsp;can't be<br>found in the 29-d space.<br><br>Therefore a radial basis function kernel has been&nbsp;used to<br>project the vectors in high-dimension&nbsp;space, where those<br>features <b>are linearly separable</b>.<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 307px; left: 623px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: 402px; height: 302.1px;">
+<div class="transformContainer" style="-webkit-transform: scale(0.81, 0.81);
+-moz-transform: scale(0.81, 0.81);
+transform: scale(0.81, 0.81)">
+<img src="./index_files/kQrpZXN.gif">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 640px; left: 551px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 82px;" class="antialias">
+<font>DEMO TIME</font>
+</div>
+</div>
+</div>
+			
+			</div>
+		
+		</div>
+	
+		
+			<div class="step past" data-state="strut-slide-10" data-x="39949.653333333335" data-y="2764.8" data-scale="3" id="step-11" style="position: absolute; transform: translate(-50%, -50%) translate3d(39949.7px, 2764.8px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(3); transform-style: preserve-3d;">
+			<div class=" slideContainer strut-slide-10" style="width: 1024px; height: 768px;">
+			<div class="themedArea">
+			
+			</div>
+			
+			<div class="componentContainer " style="top: 12px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+Face Miner vs Viola &amp; Jones<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 100px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+The <b>performance of Face Miner are bad in term of speed</b>, especially if compared to the speed<br>achieved by the state of art algorithm used for the face detection task: Viola &amp; Jones algorithm.<br><br>In fact, the <b>average speed</b> for a detection on a 320 x 243 image is<b>:&nbsp;0.528 (FM) vs 0.017 (V&amp;J)</b>.<br>The accuracy is quite good:<br><br><br><br><br><br><br>The other main difference, is <b>the region detected.<br></b><br><b>In Face Miner the ROI is smaller<br>wrt the ROI detected<br>with Viola &amp; Jones.</b><br><br><br><br><br><br>This <b>can be a cause of the speed difference</b> between the 2 methods, but can&nbsp;be<b> useful in<br>applications of facial recognition</b>&nbsp;where we have to reduce&nbsp;noisy parts to focus on the face only<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 261px; left: 36px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<img src="./index_files/eg2WyNb.png">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 261px; left: 583px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<img src="./index_files/GYg88sk.png">
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 445px; left: 403px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: 613px; height: 256.12px;">
+<div class="transformContainer" style="-webkit-transform: scale(0.94, 0.94);
+-moz-transform: scale(0.94, 0.94);
+transform: scale(0.94, 0.94)">
+<img src="./index_files/68747470733a2f2f6d656469612e6e6572647a2e65752f386c746e797237474b4350492e706e67">
+</div>
+</div>
+			
+			</div>
+		
+		</div>
+	
+		
+			<div class="step past" data-state="strut-slide-11" data-x="43499.52" data-y="5452.8" data-scale="3" id="step-12" style="position: absolute; transform: translate(-50%, -50%) translate3d(43499.5px, 5452.8px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(3); transform-style: preserve-3d;">
+			<div class=" slideContainer strut-slide-11" style="width: 1024px; height: 768px;">
+			<div class="themedArea">
+			
+			</div>
+			
+			<div class="componentContainer " style="top: 12px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+Credits<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 570px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 64px;" class="antialias">
+License<br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 100px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+Face Miner is based on the paper of Wen-Kwang Tsao at al.: "A Data Mining approach to Face<br>Detection".<br><br>In Face Miner, a critical discussion of the paper has been done. Therefore Face Miner<b> is not a<br>reproduction of the work described in the paper</b>, but a different implementation resulting<br>from this critical discussion.<br><br>The <b>original paper was not reproducible</b> due to the usage of private datasets and neither the<br>resulting work was publicly available.<br><br>Face Miner is FOSS, completely reproducible and the available on<br>GitHub: <a href="https://github.com/galeone/face-miner" target="_blank">https://github.com/galeone/face-miner</a><br><br>The datasets used are:<br><span style="font-size: 24px; font-weight: bold;">Yale Face Database B: </span><a href="http://vision.ucsd.edu/~leekc/ExtYaleDatabase/ExtYaleB.html" target="_blank" style="font-size: 24px;">http://vision.ucsd.edu/~leekc/ExtYaleDatabase/ExtYaleB.html<br><span style="font-size: 24px; color: rgb(51, 51, 51); font-weight: bold;">MIT CBCL Face Database: </span></a><a href="http://cbcl.mit.edu/software-datasets/FaceData2.html" target="_blank" style="font-size: 24px;">http://cbcl.mit.edu/software-datasets/FaceData2.html</a><br>
+</div>
+</div>
+</div>
+			
+			<div class="componentContainer " style="top: 653px; left: 18px; -webkit-transform:   ; -moz-transform:   ; transform:   ; width: px; height: px;">
+<div class="transformContainer" style="-webkit-transform: scale(1, 1);
+-moz-transform: scale(1, 1);
+transform: scale(1, 1)">
+<div style="font-size: 24px;" class="antialias">
+Face Miner: data mining applied to face detection<br>Copyright (C) 2016 Paolo Galeone &lt;nessuno@nerdz.eu&gt;<br>This Source Code Form is subject to the terms of the Mozilla Public&nbsp;License, v. 2.0.&nbsp;<br>
+</div>
+</div>
+</div>
+			
+			</div>
+		
+		</div>
+	
+	<div id="overview" class="step future" data-state="strut-slide-overview" data-x="22985.386666666665" data-y="4108.8" data-scale="9" style="position: absolute; transform: translate(-50%, -50%) translate3d(22985.4px, 4108.8px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(9); transform-style: preserve-3d;"></div>
+	
+</div></div>
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+</div>
+</div><div id="feedly-mini" title="feedly Mini tookit"></div></body></html>
