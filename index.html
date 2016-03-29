@@ -319,7 +319,7 @@ How can these two topics be related?<br>
 -moz-transform: scale(1, 1);
 transform: scale(1, 1)">
 <div style="font-size: 24px;" class="antialias">
-Lets think of an image like a set of pixel. Each pixel has its local<br>and non local characteristics (position, color, neighborhood...).<br>Therefore a set of images of the same subject, will share the<br>same&nbsp;characteristics.<br><br>A human face has its own characteristics that gives us the ability&nbsp;to detect a human face just<br>looking for those characteristics.<br><br>If follows that <b>we can use Data Mining to discover patterns in image datasets and use<br>the discovered patterns as a set of characteristics that helps us in the Face Detection task.</b><br>
+Let's think of an image as a set of pixel. Each pixel has its local<br>and non local characteristics (position, color, neighborhood...).<br>Therefore a set of images of the same subject will share the<br>same&nbsp;characteristics.<br><br>A human face has its own characteristics that give us the ability&nbsp;to detect a human face just<br>by looking for those characteristics.<br><br>If follows that <b>we can use Data Mining to discover patterns in image datasets and use<br>the discovered patterns as a set of characteristics that helps us with the Face Detection task.</b><br>
 </div>
 </div>
 </div>
@@ -435,7 +435,7 @@ transform: scale(1, 1)">
 -moz-transform: scale(1, 1);
 transform: scale(1, 1)">
 <div style="font-size: 24px;" class="antialias">
-Instead of calculate the average and the variance in the raw image, the used approach is to use<br>the <b>integral image</b>&nbsp;to compute these values in constant time.<br>
+Instead of calculating the average and the variance in the raw image, the used approach is to use<br>the <b>integral image</b>&nbsp;to compute these values in constant time.<br>
 </div>
 </div>
 </div>
@@ -466,7 +466,7 @@ Build the face detector<br>
 -moz-transform: scale(1, 1);
 transform: scale(1, 1)">
 <div style="font-size: 24px;" class="antialias">
-Based on the positive and negative feature patterns mined, we&nbsp;adopt the <b>coarse-to-fine</b><br>strategy to&nbsp;construct the face detector, which consists in three cascaded&nbsp;classifiers.<br><br><ol><li><span style="line-height: normal;"><b>Variance classifier:&nbsp;</b>to prune w</span><span style="line-height: normal;">indows with a small variance.</span></li><li><span style="line-height: normal;"><b>Face features classifier:&nbsp;</b></span><span style="line-height: normal;">to select the windows with most facial features.&nbsp;</span></li><li><span style="line-height: normal;"><b>Suppor Vector Machine</b>: to refine the results.</span></li></ol><br>
+Based on the positive and negative feature patterns mined, we&nbsp;adopt the <b>coarse-to-fine</b><br>strategy to&nbsp;construct the face detector which consists of three cascaded&nbsp;classifiers.<br><br><ol><li><span style="line-height: normal;"><b>Variance classifier:&nbsp;</b>to prune w</span><span style="line-height: normal;">indows with a small variance.</span></li><li><span style="line-height: normal;"><b>Face features classifier:&nbsp;</b></span><span style="line-height: normal;">to select the windows with most facial features.&nbsp;</span></li><li><span style="line-height: normal;"><b>Suppor Vector Machine</b>: to refine the results.</span></li></ol><br>
 </div>
 </div>
 </div>
@@ -484,7 +484,7 @@ transform: scale(1.15, 1.15)">
 -moz-transform: scale(1, 1);
 transform: scale(1, 1)">
 <div style="font-size: 24px;" class="antialias">
-<br>In the detection phase, <b>a sliding window approach</b> is<br>used to&nbsp;search for the faces in image.<br>For each sliding window,&nbsp;we extract the regions<br>of size 19x19 from every location in the&nbsp;input image<br><b>pyramid by downsampling.</b><br>
+<br>In the detection phase, <b>a sliding window approach</b> is<br>used to&nbsp;search for the faces in an image.<br>For each sliding window,&nbsp;we extract the regions<br>of size 19x19 from every location in the&nbsp;input image<br><b>pyramid by downsampling.</b><br>
 </div>
 </div>
 </div>
@@ -523,7 +523,7 @@ Variance Classifier<br>
 -moz-transform: scale(1, 1);
 transform: scale(1, 1)">
 <div style="font-size: 24px;" class="antialias">
-This classifier is used to improve the computational efficiency of the detection algorithm.<br>It prunes windows that can't&nbsp;contains faces at all.<br><br>The window is divided in 5 regions. For every region, the variance<br>is computed.<br><br>Then, the window gets discarded if:<br>&nbsp; &nbsp; &nbsp; or &nbsp; &nbsp; &nbsp; &nbsp;is less then a predefined threshold.<br><br>Threshold that must be learned with an iterative process.<br><br>If the windows passes this first step, a second criterion on the pixels average differences is<br>applied to the remaining window.<br><br>If the windows passes this second step, it's passed to the face features classifier, otherwise<br>it gets discarded.<br>
+This classifier is used to improve the computational efficiency of the detection algorithm.<br>It prunes windows that can't&nbsp;contain faces at all.<br><br>The window is divided into 5 regions. For every region, the variance<br>is computed.<br><br>Then, the window gets discarded if:<br>&nbsp; &nbsp; &nbsp; or &nbsp; &nbsp; &nbsp; &nbsp;is less then a predefined threshold.<br><br>Threshold that must be learned with an iterative process.<br><br>If the windows passes this first step, a second criterion on the pixels average differences is<br>applied to the remaining window.<br><br>If the windows passes this second step, it's passed to the face features classifier, otherwise<br>it gets discarded.<br>
 </div>
 </div>
 </div>
@@ -588,7 +588,7 @@ transform: scale(1, 1)">
 -moz-transform: scale(1, 1);
 transform: scale(1, 1)">
 <div style="font-size: 24px;" class="antialias">
-From the edge and non edge images, we built 2 databases. The first is the positive patterns DB,<br>the second is the negative patterns DB. Every row contains the coordinates of the black pixels.<br><br>Applying MAFIA on these databases we obtained the following patterns, called<br><b>positive &amp; negative features patterns</b>.&nbsp;<br>
+From the edge and non edge images, we built 2 databases. The first is the positive patterns DB,<br>the second is the negative patterns DB. Every row contains the coordinates of the black pixels.<br><br>Applying MAFIA on these databases we obtained the following patterns, called<br><b>positive &amp; negative feature patterns</b>.&nbsp;<br>
 </div>
 </div>
 </div>
@@ -637,7 +637,7 @@ Face Feature classifier<br>
 -moz-transform: scale(1, 1);
 transform: scale(1, 1)">
 <div style="font-size: 24px;" class="antialias">
-The face feature classifier utilizes the&nbsp;positive and negative feature patterns mined to select the<br>images&nbsp;with the most facial features and discard the non-face images.<br><br>This classifier is rule based and needs an iterative process <b>to learn 6 different thresholds</b>.<br>Rules are defined using the patterns as a mask and computing the sum of the intensities.<br><br>A long an iterative process has been done to learn the<br>thresholds.<br>The learning process was based on the <b>precision &amp;<br>recall metrics </b>and was stopped when satisfactory values<br>got reached.<br><br><br><br>Any image that meets the rules 1, 2 and 3 is passed to the SVM classifier,<br>otherwise it gets discarded.<br>
+The face feature classifier utilizes the&nbsp;positive and negative feature patterns mined to select the<br>images&nbsp;with the most facial features and discard the non-face images.<br><br>This classifier is rule based and needs an iterative process <b>to learn 6 different thresholds</b>.<br>Rules are defined using the patterns as a mask and computing the sum of the intensities.<br><br>A long and iterative process has been done to learn the<br>thresholds.<br>The learning process was based on the <b>precision &amp;<br>recall metrics </b>and was stopped when satisfactory values<br>got reached.<br><br><br><br>Any image that meets rules 1, 2 and 3 is passed to the SVM classifier,<br>otherwise it gets discarded.<br>
 </div>
 </div>
 </div>
@@ -762,7 +762,7 @@ transform: scale(1, 1)">
 -moz-transform: scale(1, 1);
 transform: scale(1, 1)">
 <div style="font-size: 64px;" class="antialias">
-Face Miner vs Viola &amp; Jones<br>
+Face Miner vs  &amp; Jones<br>
 </div>
 </div>
 </div>
@@ -772,7 +772,7 @@ Face Miner vs Viola &amp; Jones<br>
 -moz-transform: scale(1, 1);
 transform: scale(1, 1)">
 <div style="font-size: 24px;" class="antialias">
-The <b>performance of Face Miner are bad in term of speed</b>, especially if compared to the speed<br>achieved by the state of art algorithm used for the face detection task: Viola &amp; Jones algorithm.<br><br>In fact, the <b>average speed</b> for a detection on a 320 x 243 image is<b>:&nbsp;0.528 (FM) vs 0.017 (V&amp;J)</b>.<br>The accuracy is quite good:<br><br><br><br><br><br><br>The other main difference, is <b>the region detected.<br></b><br><b>In Face Miner the ROI is smaller<br>wrt the ROI detected<br>with Viola &amp; Jones.</b><br><br><br><br><br><br>This <b>can be a cause of the speed difference</b> between the 2 methods, but can&nbsp;be<b> useful in<br>applications of facial recognition</b>&nbsp;where we have to reduce&nbsp;noisy parts to focus on the face only<br>
+The <b>performance of Face Miner are bad in term of speed</b>, especially if compared to the speed<br>achieved by the state of art algorithm used for the face detection task: the Viola &amp; Jones algorithm.<br><br>In fact, the <b>average speed</b> for a detection on a 320 x 243 image is<b>:&nbsp;0.528 (FM) vs 0.017 (V&amp;J)</b>.<br>The accuracy is quite good:<br><br><br><br><br><br><br>The other main difference, is <b>the region detected.<br></b><br><b>In Face Miner the ROI is smaller<br>than the ROI detected<br>with Viola &amp; Jones.</b><br><br><br><br><br><br>This <b>can be a cause of the speed difference</b> between the 2 methods, but can&nbsp;be<b> useful in<br>applications of facial recognition</b>&nbsp;where we have to reduce&nbsp;noisy parts to focus on the face only<br>
 </div>
 </div>
 </div>
@@ -837,7 +837,7 @@ License<br>
 -moz-transform: scale(1, 1);
 transform: scale(1, 1)">
 <div style="font-size: 24px;" class="antialias">
-Face Miner is based on the paper of Wen-Kwang Tsao at al.: "A Data Mining approach to Face<br>Detection".<br><br>In Face Miner, a critical discussion of the paper has been done. Therefore Face Miner<b> is not a<br>reproduction of the work described in the paper</b>, but a different implementation resulting<br>from this critical discussion.<br><br>The <b>original paper was not reproducible</b> due to the usage of private datasets and neither the<br>resulting work was publicly available.<br><br>Face Miner is FOSS, completely reproducible and the available on<br>GitHub: <a href="https://github.com/galeone/face-miner" target="_blank">https://github.com/galeone/face-miner</a><br><br>The datasets used are:<br><span style="font-size: 24px; font-weight: bold;">Yale Face Database B: </span><a href="http://vision.ucsd.edu/~leekc/ExtYaleDatabase/ExtYaleB.html" target="_blank" style="font-size: 24px;">http://vision.ucsd.edu/~leekc/ExtYaleDatabase/ExtYaleB.html<br><span style="font-size: 24px; color: rgb(51, 51, 51); font-weight: bold;">MIT CBCL Face Database: </span></a><a href="http://cbcl.mit.edu/software-datasets/FaceData2.html" target="_blank" style="font-size: 24px;">http://cbcl.mit.edu/software-datasets/FaceData2.html</a><br>
+Face Miner is based on the paper of Wen-Kwang Tsao at al.: "A Data Mining approach to Face<br>Detection".<br><br>In Face Miner, a critical discussion of the paper has been done. Therefore Face Miner<b> is not a<br>reproduction of the work described in the paper</b>, but a different implementation resulting<br>from this critical discussion.<br><br>The <b>original paper was not reproducible</b> due to the usage of private datasets and, as a conseguence,<br> the resulting work was publicly available.<br><br>Face Miner is FOSS, completely reproducible and the available on<br>GitHub: <a href="https://github.com/galeone/face-miner" target="_blank">https://github.com/galeone/face-miner</a><br><br>The datasets used are:<br><span style="font-size: 24px; font-weight: bold;">Yale Face Database B: </span><a href="http://vision.ucsd.edu/~leekc/ExtYaleDatabase/ExtYaleB.html" target="_blank" style="font-size: 24px;">http://vision.ucsd.edu/~leekc/ExtYaleDatabase/ExtYaleB.html<br><span style="font-size: 24px; color: rgb(51, 51, 51); font-weight: bold;">MIT CBCL Face Database: </span></a><a href="http://cbcl.mit.edu/software-datasets/FaceData2.html" target="_blank" style="font-size: 24px;">http://cbcl.mit.edu/software-datasets/FaceData2.html</a><br>
 </div>
 </div>
 </div>
